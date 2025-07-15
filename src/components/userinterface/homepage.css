@@ -1,0 +1,118 @@
+.homepage-container {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    background-color: #f9f9f9;
+  }
+  
+
+
+  /* Header */
+  .header {
+    text-align: center;
+    background-color: #004a99;
+    padding: 10px;
+  }
+  
+  .logo {
+    max-width: 200px;
+  }
+  
+  /* Banner */
+  .banner {
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  .banner-image {
+    max-width: 100%;
+    border-radius: 5px;
+  }
+  
+  /* Content Wrapper */
+  .content {
+    padding: 20px;
+  }
+  
+  .content-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  @media (min-width: 768px) {
+    .content-wrapper {
+      flex-direction: row;
+      gap: 20px;
+    }
+  }
+  
+  /* Left Content */
+  .left-content {
+    flex: 2;
+    padding-right: 20px;
+  }
+  
+  /* FIXED: Properly closed styles */
+  .left-content h1,
+  .left-content h2,
+  .left-content h3,
+  .left-content h4 {
+    color: #004a99;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    flex: 1;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar h2 {
+    color: #004a99;
+    border-bottom: 2px solid #ffcc00;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+  }
+  
+  .journal-cover {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+  }
+  
+  .custom-link {
+    color: #004a99;
+    text-decoration: none;
+  }
+  
+  .custom-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* Footer */
+  .footer {
+    background-color: #004a99;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .footer-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  @media (min-width: 768px) {
+    .footer-container {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+  
+  .footer-bottom {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  
