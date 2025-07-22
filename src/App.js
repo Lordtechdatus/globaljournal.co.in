@@ -33,6 +33,7 @@ import NewSubmissions from './components/admin/NewSubmissionsadmin';
 import ReportsList from './components/admin/ReportsList';
 import SubmissionFiles from './components/admin/SubmissionFiles';
 import Titles from './components/admin/Titles';
+import PeerReview from './components/userinterface/PeerReview';
 
 function AppContent() {
   const location = useLocation();
@@ -77,6 +78,7 @@ function AppContent() {
         <Route path="/admin/reports" element={<ReportsList />} />
         <Route path="/admin/submission-files" element={<SubmissionFiles />} />
         <Route path="/admin/titles" element={<Titles />} />
+        <Route path="/peerReview" element={<PeerReview />} />
       </Routes>
     </>
   );

@@ -3,124 +3,69 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo copy.png'; 
 import axios from 'axios';
 
+const API = 'https://backend.globaljournal.co.in/admin-login.php';
+
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [admin, setAdmin] = useState(null);
+  const [pw, setPw] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [serverStatus, setServerStatus] = useState('');
-  const navigate = useNavigate();
+  const [err, setErr] = useState('');
+  const [srv, setSrv] = useState('');
+  const nav = useNavigate();
 
-  // We're focusing on the production endpoint since that's what connected successfully
-  const API_BASE_URL = 'https://backend.globaljournal.co.in';
-
-  // Test server connection on component mount
+  //error.message {e.message}
   useEffect(() => {
-    const testConnection = async () => {
-      try {
-        // Simple GET request to check if server is reachable
-        await axios.get(`${API_BASE_URL}/admin-login.php`, { timeout: 5000 });
-        setServerStatus('Server connection successful');
-        console.log('Server connection test successful');
-      } catch (err) {
-        // Even a 500 error means the server is reachable
-        if (err.response) {
-          setServerStatus('Server is reachable');
-          console.log('Server is reachable but returned an error');
-        } else {
-          setServerStatus(`Server connection failed: ${err.message}`);
-          console.error('Server connection test failed:', err);
-        }
-      }
-    };
-    
-    testConnection();
+    axios.get(API, { timeout: 5000 })
+      .catch(e => setSrv(e.response ? 'Server is reachable' : `Server connection failed: ${e.message}`));
   }, []);
 
-  const fetchAdminData = async (email, password) => {
-    setLoading(true);
-    setError('');
-    
+  const login = async e => {
+    e.preventDefault();
+    if (!email || !pw) return alert('Please enter both email and password.');
+    setLoading(true); setErr('');
     try {
-      const res = await axios.post(`${API_BASE_URL}/admin-login.php`, {
-        email,
-        password
-      }, {
+      const { data } = await axios.post(API, { email, password: pw }, {
         withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         timeout: 10000
       });
-  
-      handleResponse(res);
-    } catch (err) {
-      console.error('Login error:', err);
-      if (err.response) {
-        setError(err.response.data.message || 'Login failed.');
-      } else {
-        setError('Server error. Please try again.');
-      }
+      if (data?.success) {
+        localStorage.setItem('adminUser', JSON.stringify(data.user));
+        nav('/dashboard');
+      } else setErr(data?.message || 'Login failed. Please check your credentials.');
+    } catch (e) {
+      setErr(e.response?.data?.message || 'Server error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
-  
-  const handleResponse = (res) => {
-    console.log('Login response:', res.data);
-    
-    if (res.data && res.data.success) {
-      setAdmin(res.data.user);
-      localStorage.setItem('adminUser', JSON.stringify(res.data.user));
-      navigate('/dashboard');
-    } else {
-      setError(res.data?.message || 'Login failed. Please check your credentials.');
-      console.error('Not logged in:', res.data?.message);
-    }
-  };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      alert('Please enter both email and password.');
-      return;
-    }
-    fetchAdminData(email, password);
-  };
-     
   return (
     <div style={styles.page}>
       <div style={styles.overlay}></div>
-
       <div style={styles.card}>
         <div style={styles.logoSection}>
           <img src={logo} alt="Logo" style={styles.logo} />
           <h2 style={styles.title}>Admin Login</h2>
         </div>
-
-        {serverStatus && serverStatus !== 'Server connection successful' && (
-          <div style={styles.warningMessage}>{serverStatus}</div>
+        {srv && srv !== 'Server connection successful' && (
+          <div style={styles.warningMessage}>{srv}</div>
         )}
-
-        {error && <div style={styles.errorMessage}>{error}</div>}
-
-        <form onSubmit={handleLogin}>
+        {err && <div style={styles.errorMessage}>{err}</div>}
+        <form onSubmit={login}>
           <input
             type="email"
             placeholder="Email Address"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             style={styles.input}
             disabled={loading}
           />
           <input
             type="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={pw}
+            onChange={e => setPw(e.target.value)}
             style={styles.input}
             disabled={loading}
           />
@@ -143,7 +88,7 @@ const styles = {
   page: {
     position: 'relative',
     height: '89vh',
-    backgroundImage: `url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1470&q=80')`,
+    backgroundImage: `url('/adminpagebackimg.webp')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'flex',
@@ -160,7 +105,6 @@ const styles = {
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 0,
-    
   },
   card: {
     position: 'relative',

@@ -106,7 +106,7 @@ const SubmissionTemplate = () => {
               <h2>Journal Information</h2>
               <div className="yellow-line"></div>
               <div className="cover-image">
-                <img src="cover.jpg" alt="Journal Cover" />
+                <img src="Cover.webp" alt="Journal Cover" />
               </div>
               <div className="journal-info">
                 <p><strong><span>ISSN:</span></strong> 0975 9972</p>

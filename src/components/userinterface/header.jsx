@@ -7,7 +7,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import InputBase from '@mui/material/InputBase';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import HomeIcon from '@mui/icons-material/Home';
 import './header.css';
+import Drawer from '@mui/material/Drawer';
+import Collapse from '@mui/material/Collapse';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'transparent',
@@ -149,29 +154,24 @@ const Header = () => {
   const [mobileIssueMenuOpen, setMobileIssueMenuOpen] = useState(false);
   const [mobileHomeMenuOpen, setMobileHomeMenuOpen] = useState(false);
   const [mobileAuthorMenuOpen, setMobileAuthorMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerDropdownOpen, setDrawerDropdownOpen] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:900px)');
 
-  // Check if user is logged in
   useEffect(() => {
-    // Check localStorage for user authentication token
     const token = localStorage.getItem('userToken');
     setIsLoggedIn(!!token);
   }, [refresh, location.pathname]); // Add refresh state and location.pathname to dependencies
 
-  // Function to refresh the authentication status
   const refreshAuthStatus = () => {
     setRefresh(prev => !prev);
   };
 
   useEffect(() => {
-    // Set up event listener for login events
     window.addEventListener('login', refreshAuthStatus);
-    
-    // Check auth status on mount
-    refreshAuthStatus();
-    
+    refreshAuthStatus();    
     return () => {
       window.removeEventListener('login', refreshAuthStatus);
     };
@@ -237,14 +237,24 @@ const Header = () => {
   const isActive = (path) => location.pathname === path;
 
   const navItems = [
-    { name: 'Home', path: '/', dropdown: true,
+    {
+      name: 'Home',
+      path: '/',
+      icon: <HomeIcon />,
+      dropdown: false,
+    },
+    {
+      name: 'About Us',
+      path: '/about-us',
+      dropdown: true,
       subItems: [
-        { name: 'About the Journal', path: '/about' },
-        { name: 'Contact', path: '/contact' },
+        { name: 'About Us', path: '/about' },
+        { name: 'Aim & Scope', path: '/aim-scope' },
       ],
     },
-    { name: 'Editorial Team', path: '/editorial-team' },
-    { name: 'Issues',dropdown: true,
+    { name: 'Contact', path: '/contact' },
+    { name: 'Editorial Board', path: '/editorial-team' },
+    { name: 'Current/Archive',dropdown: true,
      subItems: [
         { name: 'CURRENT', path: '/issues/current' },
         { name: 'ARCHIVE', path: '/issues/archive' },
@@ -257,6 +267,7 @@ const Header = () => {
         { name: 'Submission Guidelines', path: '/SubmissionTemplate' },
         {name: 'Research Ethics Guidelines', path: '/ResearchEthicsGuidelines'},
         {name: 'Submissions', path: '/titlesubmission'},
+        {name: 'Peer Review', path: '/peerReview'},
       ],
      },
 
@@ -266,279 +277,244 @@ const Header = () => {
 
   const RenderAppBar = scrolled ? ScrolledAppBar : StyledAppBar;
 
-  const toggleMobileIssueMenu = () => {
-    setMobileIssueMenuOpen(!mobileIssueMenuOpen);
-    setMobileHomeMenuOpen(false);
-    setMobileAuthorMenuOpen(false);
-  };
+  const handleDrawerOpen = () => setDrawerOpen(true);
+  const handleDrawerClose = () => setDrawerOpen(false);
 
-  const toggleMobileHomeMenu = () => {
-    setMobileHomeMenuOpen(!mobileHomeMenuOpen);
-    setMobileIssueMenuOpen(false);
-    setMobileAuthorMenuOpen(false);
-  };
-
-  const toggleMobileAuthorMenu = () => {
-    setMobileAuthorMenuOpen(!mobileAuthorMenuOpen);
-    setMobileHomeMenuOpen(false);
-    setMobileIssueMenuOpen(false);
+  const handleDrawerDropdownToggle = (name) => {
+    setDrawerDropdownOpen((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
   return (
     <div className="header-container">
       <RenderAppBar>
         <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ justifyContent: 'space-between', py: 1.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <LogoContainer component={Link} to="/" className="header-logo">
-                <LogoImage src="/logo.png" alt="GJCMELogo" />
-                Global Journal 
-              </LogoContainer>
+          <Toolbar disableGutters sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, minHeight: '64px !important' }}>
+            {/* Left: Logo + Journal Name */}
+            <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', minWidth: 0, whiteSpace: 'nowrap', flexShrink: 0, textDecoration: 'none', color: 'inherit' }}>
+              <LogoImage src="/logo.webp" alt="GJCMELogo" style={{ marginRight: 12 }} />
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: 'Playfair Display, serif',
+                  fontWeight: 700,
+                  fontSize: { xs: '1.1rem', sm: '1.5rem' },
+                  letterSpacing: '0.03em',
+                  color: '#1a1a1a',
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1,
+                  marginRight: 3,
+                  display: 'inline-block',
+                }}
+              >
+                Global Journal
+              </Typography>
             </Box>
-            {isMobile ? (
-              <Box sx={{ flexGrow: 0 }}>
-                <IconButton size="large" onClick={handleMenu} color="inherit" className="header-icon">
-                  <MenuIcon  style={{ color: '#2d3436' }} />
-                </IconButton>
-                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                  {navItems.map((item) => (
-                    item.dropdown ? (
-                      <div key={item.name}>
-                        <MenuItem 
-                          onClick={
-                            item.name === 'Home' 
-                              ? toggleMobileHomeMenu 
-                              : item.name === 'Issues' 
-                                ? toggleMobileIssueMenu 
-                                : item.name === 'For Author'
-                                  ? toggleMobileAuthorMenu
-                                  : null
-                          }
-                          sx={{ 
-                            fontWeight: item.subItems?.some(subItem => isActive(subItem.path)) ? 600 : 400,
-                            color: item.subItems?.some(subItem => isActive(subItem.path)) ? '#d32f2f' : 'inherit'
-                          }}
-                        >
-                          {item.name}
-                        </MenuItem>
-                        {((item.name === 'Home' && mobileHomeMenuOpen) || 
-                          (item.name === 'Issues' && mobileIssueMenuOpen) ||
-                          (item.name === 'For Author' && mobileAuthorMenuOpen)) && (
-                          <Box sx={{ pl: 2, bgcolor: 'rgba(0,0,0,0.02)' }}>
-                            {item.subItems?.map((subItem) => (
-                              <MenuItem 
-                                key={subItem.name} 
-                                onClick={(event) => {
-                                  if (subItem.name === 'submissions') {
-                                    handleSubmissionClick(event, handleClose);
-                                  } else {
-                                    handleClose();
-                                  }
-                                }} 
-                                component={Link} 
-                                to={subItem.name === 'submissions' && !isLoggedIn ? '#' : subItem.path}
-                                selected={isActive(subItem.path)}
-                                sx={{ 
-                                  py: 1,
-                                  fontSize: '0.9rem',
-                                  color: isActive(subItem.path) ? '#d32f2f' : 'inherit'
-                                }}
-                              >
-                                {subItem.name}
-                              </MenuItem>
-                            ))}
-                          </Box>
+            {/* Desktop Nav Links */}
+            {!isMobile && (
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                flex: 1,
+                justifyContent: 'space-evenly',
+                gap: '0.3rem',
+                minWidth: 0,
+                overflow: 'hidden'
+              }}>
+                {navItems.map((item) => (
+                  item.dropdown ? (
+                    <Box key={item.name} sx={{ display: 'inline-block', position: 'relative' }}>
+                      <NavButton
+                        active={item.subItems?.some(subItem => isActive(subItem.path)) || isActive(item.path)}
+                        aria-owns={item.name === 'About Us' ? 'about-menu' : item.name === 'Current/Archive' ? 'issue-menu' : item.name === 'For Author' ? 'author-menu' : undefined}
+                        aria-haspopup="true"
+                        onClick={item.name === 'About Us' ? handleHomeMenuOpen : item.name === 'Current/Archive' ? handleIssueMenuOpen : handleAuthorMenuOpen}
+                        sx={{ px: 2, whiteSpace: 'nowrap' }}
+                      >
+                        {item.icon && item.name === 'Home' ? (
+                          <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>{item.icon}</Box>
+                        ) : (
+                          <>
+                            {item.icon && <Box sx={{ display: 'inline-flex', alignItems: 'center', mr: 1 }}>{item.icon}</Box>}
+                            {item.name}
+                          </>
                         )}
-                      </div>
-                    ) : (
-                      <MenuItem key={item.name} onClick={handleClose} component={Link} to={item.path} selected={isActive(item.path)}>
-                        {item.name}
-                      </MenuItem>
-                    )
-                  ))}
-                  {!isLoggedIn ? (
-                    <>
-                      <MenuItem onClick={handleClose} component={Link} to="/login">
-                        Login
-                      </MenuItem>
-                      <MenuItem onClick={handleClose} component={Link} to="/signup">
-                        Sign Up
-                      </MenuItem>
-                    </>
-                  ) : (
-                    <>
-                      <MenuItem onClick={handleClose} component={Link} to="/profile">
-                        My Profile
-                      </MenuItem>
-                      <MenuItem onClick={handleClose} component={Link} to="/submissions">
-                        My Submissions
-                      </MenuItem>
-                      <MenuItem onClick={handleClose} component={Link} to="/titlesubmission">
-                        Make a Submission
-                      </MenuItem>
-                      <MenuItem onClick={() => {handleClose(); handleLogout();}}>
-                        Logout
-                      </MenuItem>
-                    </>
-                  )}
-                </Menu>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box sx={{ mr: 2 }}>
-                  {navItems.map((item) => (
-                    item.dropdown ? (
-                      <Box 
-                        key={item.name} 
-                        sx={{ display: 'inline-block', position: 'relative' }}
-                      >
-                        <NavButton 
-                          active={item.subItems?.some(subItem => isActive(subItem.path))}
-                          aria-owns={item.name === 'Home' ? 'home-menu' : item.name === 'Issues' ? 'issue-menu' : 'author-menu'}
-                          aria-haspopup="true"
-                          onClick={item.name === 'Home' ? handleHomeMenuOpen : item.name === 'Issues' ? handleIssueMenuOpen : handleAuthorMenuOpen}
-                        >
-                          {item.name}
-                        </NavButton>
-                        <Menu
-                          id={item.name === 'Home' ? 'home-menu' : item.name === 'Issues' ? 'issue-menu' : 'author-menu'}
-                          anchorEl={item.name === 'Home' ? homeMenuAnchor : item.name === 'Issues' ? issueMenuAnchor : authorMenuAnchor}
-                          open={item.name === 'Home' ? Boolean(homeMenuAnchor) : item.name === 'Issues' ? Boolean(issueMenuAnchor) : Boolean(authorMenuAnchor)}
-                          onClose={item.name === 'Home' ? handleHomeMenuClose : item.name === 'Issues' ? handleIssueMenuClose : handleAuthorMenuClose}
-                          anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center',
-                          }}
-                          transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'center',
-                          }}
-                          PaperProps={{
-                            elevation: 2,
-                            sx: { 
-                              mt: 0.5,
-                              minWidth: 150,
-                              borderRadius: '4px',
-                            }
-                          }}
-                        >
-                          {item.subItems?.map((subItem) => (
-                            <MenuItem 
-                              key={subItem.name} 
-                              onClick={(event) => {
-                                if (subItem.name === 'submissions') {
-                                  handleSubmissionClick(event, item.name === 'Home' ? handleHomeMenuClose : item.name === 'Issues' ? handleIssueMenuClose : handleAuthorMenuClose);
-                                } else {
-                                  item.name === 'Home' ? handleHomeMenuClose() : item.name === 'Issues' ? handleIssueMenuClose() : handleAuthorMenuClose();
-                                }
-                              }} 
-                              component={Link} 
-                              to={subItem.name === 'submissions' && !isLoggedIn ? '#' : subItem.path}
-                              selected={isActive(subItem.path)}
-                              sx={{ 
-                                color: isActive(subItem.path) ? '#d32f2f' : 'inherit',
-                                fontSize: '0.9rem',
-                                py: 1
-                              }}
-                            >
-                              {subItem.name}
-                            </MenuItem>
-                          ))}
-                        </Menu>
-                      </Box>
-                    ) : (
-                      <NavButton key={item.name} active={isActive(item.path)} component={Link} to={item.path}>
-                        {item.name}
                       </NavButton>
-                    )
-                  ))}
-                </Box>
-                <Box sx={{ display: 'flex' }}>
-                  {/* <IconButton color="#fff" size="small" sx={{ ml: 1 }}> */}
-                    {/* <BookmarkBorderIcon /> */}
-                  {/* </IconButton> */}
-                  {isLoggedIn ? (
-                    <>
-                      <IconButton 
-                        color="primary" 
-                        size="small" 
-                        sx={{ 
-                          ml: 1,
-                          bgcolor: '#f0f2f5',
-                          '&:hover': {
-                            bgcolor: '#e4e6e8',
-                          },
-                          padding: '8px'
-                        }}
-                        onClick={handleUserMenu}
-                      >
-                        <AccountCircleIcon sx={{ color: '#d32f2f' }} />
-                      </IconButton>
                       <Menu
-                        anchorEl={userMenuAnchorEl}
-                        open={Boolean(userMenuAnchorEl)}
-                        onClose={handleUserMenuClose}
+                        id={item.name === 'About Us' ? 'about-menu' : item.name === 'Current/Archive' ? 'issue-menu' : 'author-menu'}
+                        anchorEl={item.name === 'About Us' ? homeMenuAnchor : item.name === 'Current/Archive' ? issueMenuAnchor : authorMenuAnchor}
+                        open={item.name === 'About Us' ? Boolean(homeMenuAnchor) : item.name === 'Current/Archive' ? Boolean(issueMenuAnchor) : Boolean(authorMenuAnchor)}
+                        onClose={item.name === 'About Us' ? handleHomeMenuClose : item.name === 'Current/Archive' ? handleIssueMenuClose : handleAuthorMenuClose}
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                        PaperProps={{ elevation: 2, sx: { mt: 0.5, minWidth: 150, borderRadius: '4px' } }}
                       >
-                        <MenuItem component={Link} to="/profile" onClick={handleUserMenuClose}>
-                          My Profile
-                        </MenuItem>
-                        <MenuItem component={Link} to="/submissions" onClick={handleUserMenuClose}>
-                          My Submissions
-                        </MenuItem>
-                        <MenuItem component={Link} to="/titlesubmission" onClick={handleUserMenuClose}>
-                          Make a Submission
-                        </MenuItem>
-                        <MenuItem onClick={handleLogout}>
-                          Logout
-                        </MenuItem>
+                        {item.subItems?.map((subItem) => (
+                          <MenuItem
+                            key={subItem.name}
+                            onClick={(event) => {
+                              if (subItem.name === 'submissions') {
+                                handleSubmissionClick(event, item.name === 'About Us' ? handleHomeMenuClose : item.name === 'Current/Archive' ? handleIssueMenuClose : handleAuthorMenuClose);
+                              } else {
+                                item.name === 'About Us' ? handleHomeMenuClose() : item.name === 'Current/Archive' ? handleIssueMenuClose() : handleAuthorMenuClose();
+                              }
+                            }}
+                            component={Link}
+                            to={subItem.name === 'submissions' && !isLoggedIn ? '#' : subItem.path}
+                            selected={isActive(subItem.path)}
+                            sx={{ color: isActive(subItem.path) ? '#d32f2f' : 'inherit', fontSize: '0.9rem', py: 1 }}
+                          >
+                            {subItem.name}
+                          </MenuItem>
+                        ))}
                       </Menu>
-                    </>
+                    </Box>
                   ) : (
-                    <>
-                      <Button 
-                        variant="text"
-                        size="small"
-                        sx={{ 
-                          ml: 1,
-                          color: '#d32f2f',
-                          '&:hover': {
-                            backgroundColor: 'rgba(211, 47, 47, 0.04)'
-                          },
-                          textTransform: 'none',
-                          fontWeight: 500
-                        }} 
-                        component={Link} 
-                        to="/login"
-                      >
-                        Login
-                      </Button>
-                      <Button 
-                        variant="outlined"
-                        size="small"
-                        sx={{ 
-                          ml: 1,
-                          borderColor: '#d32f2f',
-                          color: '#d32f2f',
-                          '&:hover': {
-                            borderColor: '#b71c1c',
-                            backgroundColor: 'rgba(211, 47, 47, 0.04)'
-                          },
-                          textTransform: 'none',
-                          fontWeight: 500
-                        }} 
-                        component={Link} 
-                        to="/signup"
-                      >
-                        Sign Up
-                      </Button>
-                    </>
-                  )}
-                  
-                </Box>
+                    <NavButton key={item.name} active={isActive(item.path)} component={Link} to={item.path} sx={{ px: 2, whiteSpace: 'nowrap' }}>
+                      {item.icon && item.name === 'Home' ? (
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>{item.icon}</Box>
+                      ) : (
+                        <>
+                          {item.icon && <Box sx={{ display: 'inline-flex', alignItems: 'center', mr: 1 }}>{item.icon}</Box>}
+                          {item.name}
+                        </>
+                      )}
+                    </NavButton>
+                  )
+                ))}
+              </Box>
+            )}
+            {/* Mobile Hamburger Icon */}
+            {isMobile && (
+              <IconButton
+                edge="end"
+                aria-label="menu"
+                onClick={handleDrawerOpen}
+                sx={{ ml: 1 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+            {/* Right: Login/Sign Up (Desktop) */}
+            {!isMobile && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                {isLoggedIn ? (
+                  <>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      sx={{
+                        bgcolor: '#f0f2f5',
+                        '&:hover': { bgcolor: '#e4e6e8' },
+                        p: '8px',
+                      }}
+                      onClick={handleUserMenu}
+                    >
+                      <AccountCircleIcon sx={{ color: '#d32f2f' }} />
+                    </IconButton>
+                    <Menu anchorEl={userMenuAnchorEl} open={Boolean(userMenuAnchorEl)} onClose={handleUserMenuClose}>
+                      <MenuItem component={Link} to="/profile" onClick={handleUserMenuClose}>My Profile</MenuItem>
+                      <MenuItem component={Link} to="/submissions" onClick={handleUserMenuClose}>My Submissions</MenuItem>
+                      <MenuItem component={Link} to="/titlesubmission" onClick={handleUserMenuClose}>Make a Submission</MenuItem>
+                      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                    </Menu>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="text"
+                      size="small"
+                      sx={{ color: '#d32f2f', textTransform: 'none', fontWeight: 500, whiteSpace: 'nowrap' }}
+                      component={Link}
+                      to="/login"
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      sx={{ borderColor: '#d32f2f', color: '#d32f2f', textTransform: 'none', fontWeight: 500, whiteSpace: 'nowrap' }}
+                      component={Link}
+                      to="/signup"
+                    >
+                      Sign Up
+                    </Button>
+                  </>
+                )}
               </Box>
             )}
           </Toolbar>
         </Container>
+        {/* Mobile Drawer */}
+        <Drawer anchor="right" open={drawerOpen} onClose={handleDrawerClose}>
+          <Box sx={{ width: 260, p: 2 }} role="presentation" onClick={handleDrawerClose}>
+            
+            {/* Nav Links (vertical) */}
+            {navItems.map((item) => (
+              <Box key={item.name} sx={{ mb: 1 }}>
+                {item.dropdown ? (
+                  <>
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); handleDrawerDropdownToggle(item.name); }}
+                      endIcon={drawerDropdownOpen[item.name] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                      sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', color: '#000', fontWeight: 600, textAlign: 'left', pl: 0, pr: 1, py: 1 }}
+                    >
+                      {item.name}
+                    </Button>
+                    <Collapse in={drawerDropdownOpen[item.name]} timeout="auto" unmountOnExit>
+                      {item.subItems?.map((subItem) => (
+                        <Button
+                          key={subItem.name}
+                          component={Link}
+                          to={subItem.path}
+                          sx={{ display: 'block', textAlign: 'left', width: '100%', color: isActive(subItem.path) ? '#000' : '#333', fontWeight: isActive(subItem.path) ? 600 : 400, pl: 3, py: 0.5 }}
+                          onClick={(event) => {
+                            if (subItem.name === 'submissions' && !isLoggedIn) {
+                              event.preventDefault();
+                              alert('Please login to make a submission');
+                              navigate('/login');
+                            }
+                          }}
+                        >
+                          {subItem.name}
+                        </Button>
+                      ))}
+                    </Collapse>
+                  </>
+                ) : (
+                  <Button
+                    component={Link}
+                    to={item.path}
+                    sx={{ display: 'block', textAlign: 'left', width: '100%', color: isActive(item.path) ? '#d32f2f' : '#333', fontWeight: isActive(item.path) ? 600 : 400, pl: 2, py: 0.5 }}
+                  >
+                    {item.icon && item.name === 'Home' ? (
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', mr: 1, verticalAlign: 'middle' }}>
+                        {item.icon}
+                        <span style={{ marginLeft: 8, verticalAlign: 'middle', display: 'inline-block' }}>Home</span>
+                      </Box>
+                    ) : (
+                      item.name
+                    )}
+                  </Button>
+                )}
+              </Box>
+            ))}
+            <Box sx={{ mt: 2, borderTop: '1px solid #eee', pt: 2 }}>
+              {isLoggedIn ? (
+                <React.Fragment>
+                  <Button component={Link} to="/profile" sx={{ display: 'block', width: '100%', textAlign: 'left', color: '#333', mb: 1 }}>My Profile</Button>
+                  <Button component={Link} to="/submissions" sx={{ display: 'block', width: '100%', textAlign: 'left', color: '#333', mb: 1 }}>My Submissions</Button>
+                  <Button component={Link} to="/titlesubmission" sx={{ display: 'block', width: '100%', textAlign: 'left', color: '#333', mb: 1 }}>Make a Submission</Button>
+                  <Button onClick={handleLogout} sx={{ display: 'block', width: '100%', textAlign: 'left', color: '#d32f2f', fontWeight: 600 }}>Logout</Button>
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  <Button component={Link} to="/login" sx={{ display: 'block', width: '100%', textAlign: 'left', color: '#d32f2f', fontWeight: 600, mb: 1 }}>Login</Button>
+                  <Button component={Link} to="/signup" sx={{ display: 'block', width: '100%', textAlign: 'left', color: '#d32f2f', fontWeight: 600 }}>Sign Up</Button>
+                </React.Fragment>
+              )}
+            </Box>
+          </Box>
+        </Drawer>
       </RenderAppBar>
     </div>
   );

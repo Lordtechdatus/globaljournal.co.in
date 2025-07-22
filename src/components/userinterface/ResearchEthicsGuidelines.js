@@ -182,7 +182,7 @@ const ResearchEthicsGuidelines = () => {
                 <Divider sx={{ mt: 1, mb: 2, height: 3, backgroundColor: '#d32f2f', width: '40px' }} />
               </Typography>
               <Box sx={{ mb: 2, border: '1px solid #eee', p: 2, borderRadius: 1, textAlign: 'center' }}>
-                <img src="/cover.jpg" alt="Journal Cover" style={{ maxWidth: '100%', height: 'auto' }} />
+                <img src="/Cover.webp" alt="Journal Cover" style={{ maxWidth: '100%', height: 'auto' }} />
               </Box>
               <Box>
                 <Typography variant="body2" sx={{ mb: 1 }}><strong>ISSN:</strong> 0975-9972</Typography>

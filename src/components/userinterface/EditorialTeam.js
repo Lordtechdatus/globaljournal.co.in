@@ -114,7 +114,7 @@ const EditorialTeam = () => {
             mb: 2
           }}
         >
-          Editorial Team
+          Editorial Board
         </Typography>
         <Divider sx={{ width: '80px', mx: 'auto', borderWidth: '2px', borderColor: '#1976d2', mb: 3 }} />
         <Typography variant="subtitle1" color="text.secondary" sx={{ maxWidth: '700px', mx: 'auto' }}>

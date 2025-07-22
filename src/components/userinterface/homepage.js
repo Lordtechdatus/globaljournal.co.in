@@ -1,107 +1,70 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 import { Link, useNavigate } from "react-router-dom";
-import { AppBar, 
-  Toolbar, 
-  Typography, Button, 
-  Container, 
-  Grid, 
-  Card, 
-  CardContent, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  IconButton, 
-  Menu, 
-  MenuItem, 
-  Box,
-  TextField,
-  InputAdornment,
-  Fade,
-  Paper,
-  Divider,
-  useMediaQuery,
-  CardMedia
-} from '@mui/material';
-import { 
-  Search as SearchIcon, 
-  KeyboardArrowDown,
-  Article, 
-  Description, 
-  Copyright,
-  Menu as MenuIcon, 
-  AccountCircle,
-  VerifiedUser,
-  ArrowForward
-} from '@mui/icons-material';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import Fade from '@mui/material/Fade';
+import Paper from '@mui/material/Paper';
+import Divider from '@mui/material/Divider';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import CardMedia from '@mui/material/CardMedia';
+import SearchIcon from '@mui/icons-material/Search';
+import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
+import Article from '@mui/icons-material/Article';
+import Description from '@mui/icons-material/Description';
+import Copyright from '@mui/icons-material/Copyright';
+import MenuIcon from '@mui/icons-material/Menu';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import VerifiedUser from '@mui/icons-material/VerifiedUser';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+
 import { styled, alpha } from '@mui/material/styles';
 import { isLoggedIn } from '../../utils/authUtils';
 
 // Custom animation styles
-const fadeIn = {
-  animation: 'fadeIn 0.8s ease-in-out',
-  '@keyframes fadeIn': {
-    '0%': { opacity: 0 },
-    '100%': { opacity: 1 }
-  }
-};
-
-const slideDown = {
-  animation: 'slideDown 0.5s ease-in-out',
-  '@keyframes slideDown': {
-    '0%': { opacity: 0, transform: 'translateY(-20px)' },
-    '100%': { opacity: 1, transform: 'translateY(0)' }
-  }
-};
-
-const slideUp = {
-  animation: 'slideUp 0.8s ease-in-out',
-  '@keyframes slideUp': {
-    '0%': { opacity: 0, transform: 'translateY(20px)' },
-    '100%': { opacity: 1, transform: 'translateY(0)' }
-  }
-};
-
-const slideRight = {
-  animation: 'slideRight 0.8s ease-in-out',
-  '@keyframes slideRight': {
-    '0%': { opacity: 0, transform: 'translateX(-20px)' },
-    '100%': { opacity: 1, transform: 'translateX(0)' }
-  }
-};
-
-const slideLeft = {
-  animation: 'slideLeft 0.8s ease-in-out',
-  '@keyframes slideLeft': {
-    '0%': { opacity: 0, transform: 'translateX(20px)' },
-    '100%': { opacity: 1, transform: 'translateX(0)' }
-  }
+const anim = {
+  fadeIn: { animation: 'fadeIn 0.8s', '@keyframes fadeIn': { '0%': { opacity: 0 }, '100%': { opacity: 1 } } },
+  slideDown: { animation: 'slideDown 0.5s', '@keyframes slideDown': { '0%': { opacity: 0, transform: 'translateY(-20px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } } },
+  slideUp: { animation: 'slideUp 0.8s', '@keyframes slideUp': { '0%': { opacity: 0, transform: 'translateY(20px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } } },
+  slideRight: { animation: 'slideRight 0.8s', '@keyframes slideRight': { '0%': { opacity: 0, transform: 'translateX(-20px)' }, '100%': { opacity: 1, transform: 'translateX(0)' } } },
+  slideLeft: { animation: 'slideLeft 0.8s', '@keyframes slideLeft': { '0%': { opacity: 0, transform: 'translateX(20px)' }, '100%': { opacity: 1, transform: 'translateX(0)' } } }
 };
 
 // ======== START: STYLED HEADER COMPONENT ========
 // This section contains the modern header styling based on Header.jsx
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
+const SAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'transparent',
   boxShadow: 'none',
   borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-  transition: 'background-color 0.3s ease-in-out',
-  position: 'static',
-  width: '100%',
-  zIndex: 1100,
+  transition: 'background-color 0.3s',
+  position: 'static', width: '100%', zIndex: 1100,
 }));
 
-const ScrolledAppBar = styled(AppBar)(({ theme }) => ({
+const SAppBarScrolled = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(8px)',
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
   borderBottom: 'none',
-  transition: 'all 0.3s ease-in-out',
-  position: 'static',
-  width: '100%',
-  zIndex: 1100,
+  transition: 'all 0.3s',
+  position: 'static', width: '100%', zIndex: 1100,
 }));
 
-const LogoContainer = styled(Typography)(({ theme }) => ({
+const Logo = styled(Typography)(({ theme }) => ({
   fontFamily: '"Playfair Display", serif',
   letterSpacing: '0.03em',
   fontWeight: 700,
@@ -163,7 +126,7 @@ const StyledInputBase = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const NavButton = styled(Button)(({ theme, active }) => ({
+const SBtn = styled(Button)(({ theme, active }) => ({
   color: active ? '#d32f2f' : '#333',
   fontWeight: active ? 600 : 500,
   padding: '8px 16px',
@@ -205,7 +168,7 @@ const HeroSection = () => {
         borderRadius: 4,
         mb: 6,
         boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-        ...fadeIn
+        ...anim.fadeIn
       }}
     >
       <Box
@@ -221,7 +184,8 @@ const HeroSection = () => {
       />
       <Box
         component="img"
-        src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+        src="/Construction.webp"
+        //  src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
         alt="Construction Management"
         sx={{
           position: 'absolute',
@@ -248,7 +212,7 @@ const HeroSection = () => {
               fontWeight: 700, 
               fontSize: '3.1rem',
               mb: 2,
-              ...slideDown
+              ...anim.slideDown
             }}
           >
             Global Journal of Construction Management and Engineering
@@ -259,7 +223,7 @@ const HeroSection = () => {
               color: 'rgba(255,255,255,0.85)', 
               fontSize: '0.9rem',
               mb: 4,
-              ...slideRight,
+              ...anim.slideRight,
               animationDelay: '200ms'
             }}
           >
@@ -276,7 +240,7 @@ const HeroSection = () => {
               py: 1.5, 
               px: 4, 
               fontWeight: 600,
-              ...slideUp,
+              ...anim.slideUp,
               animationDelay: '400ms'
             }}
           >
@@ -288,78 +252,14 @@ const HeroSection = () => {
   );
 };
 
-// // New Stats Bar Component
-// const StatsBar = () => {
-//   return (
-//     <Box
-//       sx={{
-//         mb: 6,
-//         ...slideUp,
-//         animationDelay: '500ms'
-//       }}
-//     >
-//       <Paper
-//         elevation={3}
-//         sx={{
-//           borderRadius: 3,
-//           py: 2,
-//           px: 4,
-//           background: 'linear-gradient(90deg, #1E3A8A 0%, #304B9C 100%)',
-//           position: 'relative',
-//           overflow: 'hidden'
-//         }}
-//       >
-//         <Box
-//           component="img"
-//           src="https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-//           alt="Stats Background"
-//           sx={{
-//             position: 'absolute',
-//             top: 0,
-//             left: 0,
-//             width: '100%',
-//             height: '100%',
-//             objectFit: 'cover',
-//             opacity: 0.1
-//           }}
-//         />
-//         <Grid container spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
-//           <Grid item xs={6} sm={3}>
-//             <Box sx={{ textAlign: 'center', color: 'white' }}>
-//               <Typography variant="h4" sx={{ fontWeight: 700 }}>1+</Typography>
-//               <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>Volumes Published</Typography>
-//             </Box>
-//           </Grid>
-//           <Grid item xs={6} sm={3}>
-//             <Box sx={{ textAlign: 'center', color: 'white' }}>
-//               <Typography variant="h4" sx={{ fontWeight: 700 }}>250+</Typography>
-//               <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>Published Articles</Typography>
-//             </Box>
-//           </Grid>
-//           <Grid item xs={6} sm={3}>
-//             <Box sx={{ textAlign: 'center', color: 'white' }}>
-//               <Typography variant="h4" sx={{ fontWeight: 700 }}>97%</Typography>
-//               <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>Peer Review Rate</Typography>
-//             </Box>
-//           </Grid>
-//           <Grid item xs={6} sm={3}>
-//             <Box sx={{ textAlign: 'center', color: 'white' }}>
-//               <Typography variant="h4" sx={{ fontWeight: 700 }}>45</Typography>
-//               <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.9rem' }}>Countries Reached</Typography>
-//             </Box>
-//           </Grid>
-//         </Grid>
-//       </Paper>
-//     </Box>
-//   );
-// };
+
 
 const MainContent = () => {
   const navigate = useNavigate();
   
   return (
     <Box 
-      sx={{ ...slideUp, animationDelay: '300ms' }}
+      sx={{ ...anim.slideUp, animationDelay: '300ms' }}
       component={Paper} 
       elevation={2} 
       style={{ padding: 32, borderRadius: 8 }}
@@ -405,7 +305,7 @@ const MainContent = () => {
             sx={{ 
               height: '100%', 
               borderTop: '4px solid #3f51b5',
-              ...slideRight,
+              ...anim.slideRight,
               animationDelay: '500ms',
               transition: 'transform 0.3s ease',
               '&:hover': {
@@ -447,7 +347,7 @@ const MainContent = () => {
             sx={{ 
               height: '100%', 
               borderTop: '4px solid #f50057',
-              ...slideRight,
+              ...anim.slideRight,
               animationDelay: '700ms',
               transition: 'transform 0.3s ease',
               '&:hover': {
@@ -489,7 +389,7 @@ const MainContent = () => {
             sx={{ 
               height: '100%', 
               borderTop: '4px solid #4caf50',
-              ...slideRight,
+              ...anim.slideRight,
               animationDelay: '900ms',
               transition: 'transform 0.3s ease',
               '&:hover': {
@@ -581,7 +481,7 @@ const MainContent = () => {
       <Box 
         sx={{ 
           mt: 5, 
-          ...slideUp, 
+          ...anim.slideUp, 
           animationDelay: '500ms',
           position: 'relative',
           overflow: 'hidden' 
@@ -642,7 +542,7 @@ const MainContent = () => {
 
 const Sidebar = () => {
   return (
-    <Box sx={{ ...slideLeft, animationDelay: '400ms' }}>
+    <Box sx={{ ...anim.slideLeft, animationDelay: '400ms' }}>
       <Card elevation={3} sx={{ 
         mb: 4, 
         overflow: 'visible', 
@@ -687,8 +587,9 @@ const Sidebar = () => {
           }}>
             <Box 
               component="img" 
-              src="/cover.jpg" 
+              src="/Cover.webp" 
               alt="Journal Cover" 
+              loading="lazy"
               sx={{ 
                 maxWidth: '100%', 
                 height: 'auto', 
@@ -817,7 +718,7 @@ const Sidebar = () => {
         mt: 4,
         borderRadius: 2,
         overflow: 'hidden',
-        ...slideLeft,
+        ...anim.slideLeft,
         animationDelay: '600ms'
       }}>
         <CardMedia
@@ -892,7 +793,7 @@ const Sidebar = () => {
         mt: 4,
         borderRadius: 2,
         overflow: 'hidden',
-        ...slideLeft,
+        ...anim.slideLeft,
         animationDelay: '800ms'
       }}>
         <Box sx={{ position: 'relative' }}>
@@ -1024,7 +925,7 @@ const Footer = () => {
         boxShadow: '0 -4px 10px rgba(0,0,0,0.05)',
         position: 'relative',
         overflow: 'hidden',
-        ...fadeIn,
+        ...anim.fadeIn,
         animationDelay: '600ms'
       }}
     >
@@ -1100,7 +1001,7 @@ const Footer = () => {
 
 const App = () => {
   return (
-    <Box sx={{ ...fadeIn }}>
+    <Box sx={{ ...anim.fadeIn }}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
         <HeroSection />
         <Grid container spacing={4}>

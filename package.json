@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@types/react": "^17.0.52",
-    "@types/react-dom": "^17.0.19"
+    "@types/react-dom": "^17.0.19",
+    "source-map-explorer": "^2.5.3"
   }
 }

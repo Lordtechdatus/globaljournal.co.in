@@ -149,7 +149,7 @@ const AboutTheJournal = () => {
   }}
 >
   <img
-    src="/aboutjournal.png"
+    src="/aboutjournal.webp"
     alt="Journal Cover"
     style={{
       width: '90%',

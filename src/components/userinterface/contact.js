@@ -4,20 +4,26 @@ import "./contact.css"; // We'll create this CSS
 const Contact = () => {
   return (
     <div className="contact-container">
-      <h2 className="contact-title">LET'S CONNECT</h2>
+      <h2 className="contact-title"> Publisher:- </h2>
 
       {/* Contact Details Section */}
       <div className="contact-details">
         <div className="contact-info-box">
           <i className="fas fa-map-marker-alt contact-icon"></i>
-          <h3 className="info-title">OUR MAIN OFFICE</h3>
-          <p>G1, Akansha Apartment, Patel Nagar, City Centre, Gwalior, Near Raj Rajeshwari Apartment-474002</p>
+          <h3 className="info-title">PUBLISHER OFFICE</h3>
+          <div>
+            <strong>Publisher Name:</strong><br />
+            Lord-Tech datus Solution Pvt. Ltd.<br /><br />
+            <strong>Publisher Address:</strong><br />
+            G1, Akansha Apartment, Patel Nagar, City Centre, Gwalior,<br />
+            Near Raj Rajeshwari Apartment-474002
+          </div>
         </div>
         <div className="contact-info-box">
           <i className="fas fa-phone contact-icon"></i>
           <h3 className="info-title">PHONE NUMBER</h3>
-          <p>+91-9319250172</p>
-          <p>+91-6261068377</p>
+          <p>+91-93192 50172</p>
+          <p>+91-80772 81918</p>
         </div>
         <div className="contact-info-box">
           <i className="fas fa-envelope contact-icon"></i>
