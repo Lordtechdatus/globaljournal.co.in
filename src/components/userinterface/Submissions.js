@@ -275,7 +275,7 @@ export default function Submissions({ isEmbedded = false }) {
                   >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-  <Typography
+              <Typography
     variant="subtitle1"
     fontWeight="medium"
     component="div"

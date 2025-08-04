@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
 import "./styles.css";
 import { Link, useNavigate } from "react-router-dom";
 import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -12,24 +10,14 @@ import CardContent from '@mui/material/CardContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import CardMedia from '@mui/material/CardMedia';
-import SearchIcon from '@mui/icons-material/Search';
-import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import Article from '@mui/icons-material/Article';
 import Description from '@mui/icons-material/Description';
 import Copyright from '@mui/icons-material/Copyright';
-import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import VerifiedUser from '@mui/icons-material/VerifiedUser';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 
@@ -49,7 +37,7 @@ const anim = {
 // This section contains the modern header styling based on Header.jsx
 const SAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'transparent',
-  boxShadow: 'none',
+  boxShadow:'none',
   borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
   transition: 'background-color 0.3s',
   position: 'static', width: '100%', zIndex: 1100,
@@ -153,7 +141,7 @@ const SBtn = styled(Button)(({ theme, active }) => ({
     opacity: active ? 1 : 0,
   }
 }));
-// ======== END: STYLED HEADER COMPONENT ========
+// ======== END: STYLED HEADER COMPONENT ========//
 
 // Hero section with background image
 const HeroSection = () => {
@@ -251,8 +239,6 @@ const HeroSection = () => {
     </Box>
   );
 };
-
-
 
 const MainContent = () => {
   const navigate = useNavigate();
@@ -751,7 +737,7 @@ const Sidebar = () => {
           <Typography variant="body2" sx={{ mb: 2, color: '#555' }}>
             Our upcoming issue features research on sustainable construction, smart building technologies, and innovative project management methodologies.
           </Typography>
-          
+{/*           
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -763,7 +749,7 @@ const Sidebar = () => {
           }}>
             <Typography variant="body2" sx={{ fontWeight: 500 }}>Submission Deadline:</Typography>
             <Typography variant="body2" sx={{ fontWeight: 600, color: '#d32f2f' }}>June 5, 2025</Typography>
-          </Box>
+          </Box> */}
           
           <Button 
             variant="outlined" 
@@ -983,8 +969,7 @@ const Footer = () => {
     }}
     component={Link}
     to="/adminlogin"
-  >
-    Admin Login
+  >  Admin Login
   </Button>
           </Grid>
         </Grid>
@@ -992,13 +977,12 @@ const Footer = () => {
         <Divider sx={{ my: 3, bgcolor: 'rgba(255,255,255,0.2)' }} />
         
         <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-          &copy; 2024 Global Journal of Construction Management and Engineering. All rights reserved.
+          &copy; 2025 Global Journal of Construction Management and Engineering. All rights reserved.
         </Typography>
       </Container>
     </Box>
   );
 };
-
 const App = () => {
   return (
     <Box sx={{ ...anim.fadeIn }}>
