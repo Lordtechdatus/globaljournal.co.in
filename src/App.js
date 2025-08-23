@@ -34,6 +34,7 @@ import ReportsList from './components/admin/ReportsList';
 import SubmissionFiles from './components/admin/SubmissionFiles';
 import Titles from './components/admin/Titles';
 import PeerReview from './components/userinterface/PeerReview';
+import TidioWidget from './components/TidioWidget';
 
 function AppContent() {
   const location = useLocation();
@@ -80,6 +81,7 @@ function AppContent() {
         <Route path="/admin/titles" element={<Titles />} />
         <Route path="/peerReview" element={<PeerReview />} />
       </Routes>
+      <TidioWidget />
     </>
   );
 }
