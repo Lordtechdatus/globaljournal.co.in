@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { Link, useNavigate } from 'react-router-dom';
+import ApiService from '../../Services/FetchNodeAdminServices';
 import { useRequireAuth } from '../../utils/authUtils';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -109,30 +110,23 @@ export default function SubmissionUpload() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('id', id);
+
+      const result = await ApiService.uploadFile(formData);
       
-      const response = await fetch('https://backend.globaljournal.co.in/upload.php', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include' 
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        // Store the server file name in the file object
+      if (result?.success) {
         const updatedFile = {
           ...file,
           serverFileName: result.fileName,
           uploadSuccess: true,
-          size: file.size || 0 // Ensure size is always defined
+          size: file.size || 0
         };
         return updatedFile;
-      } else {
-        throw new Error(result.message || 'Upload failed');
       }
+      throw new Error(result?.message || 'Upload failed');
     } catch (error) {
-      console.error('Upload error:', error);
-      setErrorMessage(error.message || 'An error occurred during upload');
+      const message = error?.response?.data?.message || error.message || 'An error occurred during upload';
+      console.error('Upload error:', message);
+      setErrorMessage(message);
       return null;
     } finally {
       setIsUploading(false);

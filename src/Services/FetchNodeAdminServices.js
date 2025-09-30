@@ -1,154 +1,85 @@
 import axios from 'axios';
 
-// Base URL of your backend API
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-console.log(API_BASE_URL);
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://backend.globaljournal.co.in'; // fallback
+console.log('API_BASE_URL =', API_BASE_URL);
 
-// Create axios instance with default config
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 5000
+  baseURL: API_BASE_URL,       // ✅ all relative paths will use the backend domain
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 10000
 });
 
-// Add request interceptor for authorization headers
-apiClient.interceptors.request.use(
-  (config) => {
-    // Get token from localStorage if it exists
-    const token = localStorage.getItem('userToken');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// (optional) If userToken is a JSON object (not a JWT), don't send it as Bearer
+apiClient.interceptors.request.use((config) => {
+  // If later you add a real JWT token, set it here:
+  // const jwt = localStorage.getItem('jwt');
+  // if (jwt) config.headers.Authorization = `Bearer ${jwt}`;
+  return config;
+});
 
-// API service methods for different endpoints
+// Auth
 const ApiService = {
-  // Authentication methods
-  login: (credentials) => {
-    return apiClient.post('https://backend.globaljournal.co.in/login.php', credentials);
-  },
-  
-  // Generic post method for any endpoint
-  post: async (url, data) => {
-    const response = await apiClient.post(url, data);
-    return response.data;
-  },
-  
-  register: (userData) => {
-    return apiClient.post('register.php', userData);
-  },
+  login: (credentials) => apiClient.post('/login.php', credentials),
 
-  submitSubmission: (submissionData) => {
-    return apiClient.post('title_submission.php', submissionData);
-  },
-  
-  // User data methods
+  register: (userData) => apiClient.post('/register.php', userData),
+
+  // generic JSON post helper (expects relative PHP path)
+  post: (path, payload) =>
+    apiClient.post(path.startsWith('/') ? path : `/${path}`, payload).then(res => res.data),
+
   getUserProfile: () => {
-    const userToken = localStorage.getItem('userToken');
-      
-        // Check if userToken exists
-        if (!userToken) {
-          return Promise.reject(new Error('User not logged in'));
-        }
-      
-        const parsedToken = JSON.parse(userToken);
-        const userId = parsedToken.id;
-        const expiry = new Date(parsedToken.expires_at);
-        const currentTime = new Date();
-      
-        // Check if the token has expired
-        if (currentTime > expiry) {
-          return Promise.reject(new Error('Token has expired. Please log in again.'));
-        }
-    // Make the API call to get user profile
-    return apiClient.post('get_profile.php', { user_id: userId })
-      .then(response => {
-        if (response.data.success) {
-          return response.data; // Successfully received user data
-        } else {
-          throw new Error(response.data.message || 'Failed to fetch profile');
-        }
+    const raw = localStorage.getItem('userToken');
+    if (!raw) return Promise.reject(new Error('User not logged in'));
+
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { return Promise.reject(new Error('Invalid session. Please log in again.')); }
+
+    const userId = parsed?.id;
+    const email  = parsed?.email;
+    const expiry = parsed?.expires_at ? new Date(parsed.expires_at) : null;
+    if (expiry && new Date() > expiry) return Promise.reject(new Error('Token has expired. Please log in again.'));
+    if (!userId && !email) return Promise.reject(new Error('Missing user id/email. Please log in again.'));
+
+    const payload = userId ? { id: userId } : { email };
+
+    return apiClient.post('/get_profile.php', payload)
+      .then(({ data }) => {
+        if (!data?.success) throw new Error(data?.message || 'Failed to fetch profile');
+        return data.data; // return the user object
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.response) {
-          if (error.response.status === 401) {
-            throw new Error('Authentication failed. Please login again.');
-          } else if (error.response.status === 404) {
-            throw new Error('User profile not found');
-          }
+          const { status } = error.response;
+          if (status === 401) throw new Error('Authentication failed. Please login again.');
+          if (status === 404) throw new Error('User profile not found');
+          if (status === 422) throw new Error('Profile request missing id/email. Please login again.');
         }
-        throw error; // Rethrow any other errors
+        throw error;
       });
-  },  
-  
-  updateUserProfile: (userData) => {
-    return apiClient.put('update_profile.php', userData);
-  },
-  
-  // Data submission method
-  submitData: (data) => {
-    return apiClient.post('/data/submit', data);
-  },
-  
-  // Get data method
-  getData: (params) => {
-    return apiClient.get('/data', { params });
-  },
-  
-  // Form submission method using the specific endpoint
-  submitForm: async (formData) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/submit-form`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      return response.json();
-    } catch (error) {
-      throw error;
-    }
   },
 
-  // Alternative using axios
-  submitFormAxios: (formData) => {
-    return apiClient.post('/submit-form', formData);
-  },
-  
-  // Connection check
+  submitSubmission: (submissionData) => apiClient.post('/title_submission.php', submissionData),
+  updateUserProfile: (userData) => apiClient.put('/update_profile.php', userData),
+
+  // --- keep or remove these if not used; ensure paths exist on PHP backend ---
+  submitData: (data) => apiClient.post('/data/submit', data),
+  getData: (params) => apiClient.get('/data', { params }),
+
+  // file upload
+  uploadFile: (formData) =>
+    apiClient.post('/upload.php', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000, // uploads may take longer
+      withCredentials: true // mirror previous fetch credentials
+    }).then(res => res.data),
+
+  // optional health check
   isServerRunning: async () => {
     try {
-      const response = await apiClient.get('/');
-      
-      // Check if we got a valid response
-      if (response.data && response.data.message === 'Backend server is running') {
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      if (error.code === 'ERR_NETWORK') {
-        return false;
-      }
-      if (error.response) {
-        return true;
-      }
-      return false;
-    }
+      const response = await apiClient.get('/'); // only works if backend root returns something
+      return !!response;
+    } catch (e) { return false; }
   }
 };
 
-export default ApiService; 
+export default ApiService;

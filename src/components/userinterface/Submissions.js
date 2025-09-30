@@ -46,7 +46,7 @@ const SearchContainer = styled(Box)(({ theme }) => ({
   animationDelay: '100ms',
 }));
 
-const StatusChip = styled(Chip)(({ status, theme }) => ({
+const StatusChip = styled(Chip)(({ status }) => ({
   borderRadius: 16,
   fontWeight: 500,
   fontSize: '0.75rem',
@@ -71,6 +71,55 @@ const AnimatedButton = styled(Button)(({ delay = 0 }) => ({
   animationDelay: `${delay}ms`,
 }));
 
+// ---------- helpers ----------
+const safeHTML = (html) => ({ __html: DOMPurify.sanitize(html || '') });
+
+const toArrayKeywords = (kw) => {
+  // Already array
+  if (Array.isArray(kw)) {
+    return kw.map((k) => String(k)).filter(Boolean);
+  }
+  // JSON string?
+  if (typeof kw === 'string') {
+    const str = kw.trim();
+    if (str.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(str);
+        return Array.isArray(parsed) ? parsed.map((k) => String(k)).filter(Boolean) : [];
+      } catch {
+        // fallthrough to CSV
+      }
+    }
+    // CSV fallback
+    return str
+      .split(',')
+      .map((k) => k.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const normalizeSubmission = (s) => {
+  const id = s?.id ?? s?._id;
+  const updatedAt = s?.updatedAt ?? s?.updated_at ?? s?.updated_at?.value ?? null;
+  const createdAt = s?.createdAt ?? s?.created_at ?? null;
+  return {
+    ...s,
+    id,
+    keywords: toArrayKeywords(s?.keywords),
+    updatedAt,
+    createdAt,
+    status: s?.status || 'Submitted',
+    title: s?.title || 'No title',
+    abstract: s?.abstract || '',
+  };
+};
+
+const formatDate = (d) => {
+  const dt = d ? new Date(d) : null;
+  return dt && !isNaN(dt.getTime()) ? dt.toLocaleDateString() : '';
+};
+
 export default function Submissions({ isEmbedded = false }) {
   const [tabValue, setTabValue] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,8 +129,6 @@ export default function Submissions({ isEmbedded = false }) {
   const navigate = useNavigate();
 
   // Always call the hook unconditionally
-  // When embedded, we don't need to redirect (first param is false)
-  // When not embedded, we do want to show alerts (second param is true)
   const isAuthenticated = useRequireAuth(!isEmbedded, !isEmbedded);
 
   // Fetch submissions when component mounts
@@ -91,26 +138,20 @@ export default function Submissions({ isEmbedded = false }) {
         setLoading(true);
         const userToken = localStorage.getItem('userToken');
         let submitted_by = null;
-        
+
         if (userToken) {
           try {
             const parsedToken = JSON.parse(userToken);
-            submitted_by = parsedToken.id;
+            submitted_by = parsedToken?.id || null;
           } catch (error) {
-            console.error("Failed to parse userToken:", error);
+            console.error('Failed to parse userToken:', error);
           }
         }
 
-        
-        // Call the API to get submissions
-        const response = await ApiService.post(`get_submissions.php?submitted_by=${submitted_by}`, {});
-        
-        if (response.success && response.submissions) {
-          setSubmissionList(response.submissions);
-        } else {
-          // If there's no submissions or API unsuccessful
-          setSubmissionList([]);
-        }
+        const response = await ApiService.post('get_submissions.php', { submitted_by });
+
+        const list = Array.isArray(response?.submissions) ? response.submissions : [];
+        setSubmissionList(list.map(normalizeSubmission));
       } catch (error) {
         console.error('Error fetching submissions:', error);
         setSubmissionList([]);
@@ -124,8 +165,6 @@ export default function Submissions({ isEmbedded = false }) {
     }
   }, [isAuthenticated]);
 
-  // If embedded or authenticated, continue rendering
-  // Otherwise, the hook will handle redirecting
   if (!isEmbedded && !isAuthenticated) {
     return <CircularProgress />;
   }
@@ -135,9 +174,7 @@ export default function Submissions({ isEmbedded = false }) {
   };
 
   const handleViewSubmission = (submissionId) => {
-    // Store the submissionId in localStorage to access it in the submission review page
     localStorage.setItem('currentSubmissionId', submissionId);
-    // Navigate to the submission review page
     navigate('/submission-review');
   };
 
@@ -146,21 +183,19 @@ export default function Submissions({ isEmbedded = false }) {
   };
 
   const toggleExpand = (id) => {
-    setExpanded(prev => ({
+    setExpanded((prev) => ({
       ...prev,
-      [id]: !prev[id]
+      [id]: !prev[id],
     }));
   };
 
   const handleDelete = async (id) => {
     try {
       setLoading(true);
-      // Call API to delete the submission
       const response = await ApiService.post('delete_submission.php', { submissionId: id });
-      
-      if (response.success) {
-        // Remove from local state if API call was successful
-        setSubmissionList(prev => prev.filter(submission => (submission.id || submission._id) !== id));
+
+      if (response?.success) {
+        setSubmissionList((prev) => prev.filter((s) => s.id !== id));
       } else {
         alert('Failed to delete submission. Please try again.');
       }
@@ -173,26 +208,20 @@ export default function Submissions({ isEmbedded = false }) {
   };
 
   // Filter submissions based on search query
-  const filteredSubmissions = submissionList.filter(submission => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      (submission.title && submission.title.toLowerCase().includes(searchLower)) ||
-      (submission.abstract && submission.abstract.toLowerCase().includes(searchLower)) ||
-      (submission.keywords && submission.keywords.some(keyword => 
-        keyword.toLowerCase().includes(searchLower)
-      ))
+  const filteredSubmissions = submissionList.filter((submission) => {
+    const searchLower = (searchQuery || '').toLowerCase();
+    const titleHit = (submission.title || '').toLowerCase().includes(searchLower);
+    const abstractText = (submission.abstract || '').replace(/<[^>]+>/g, '');
+    const abstractHit = abstractText.toLowerCase().includes(searchLower);
+    const keywordsHit = (submission.keywords || []).some((k) =>
+      String(k).toLowerCase().includes(searchLower)
     );
+    return titleHit || abstractHit || keywordsHit;
   });
 
-  // Choose the appropriate container and Paper component based on whether the component is embedded
   const PaperComponent = isEmbedded ? EmbeddedStyledPaper : StyledPaper;
-  const ContentWrapper = ({ children }) => {
-    return isEmbedded ? (
-      <>{children}</>
-    ) : (
-      <Container maxWidth="lg" sx={{ py: 6 }}>{children}</Container>
-    );
-  };
+  const ContentWrapper = ({ children }) =>
+    isEmbedded ? <>{children}</> : <Container maxWidth="lg" sx={{ py: 6 }}>{children}</Container>;
 
   return (
     <ContentWrapper>
@@ -210,7 +239,13 @@ export default function Submissions({ isEmbedded = false }) {
           indicatorColor="primary"
           textColor="primary"
         >
-          <Tab label={<Box sx={{ display: 'flex', alignItems: 'center' }}>My Queue <Chip size="small" label={submissionList.length} sx={{ ml: 1, height: 20, fontSize: '0.75rem' }} /></Box>} />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                My Queue <Chip size="small" label={submissionList.length} sx={{ ml: 1, height: 20, fontSize: '0.75rem' }} />
+              </Box>
+            }
+          />
           <Tab label="Archived" />
         </Tabs>
       </AnimatedBox>
@@ -233,7 +268,7 @@ export default function Submissions({ isEmbedded = false }) {
           </IconButton>
         </Box>
 
-        <Box className="animate-slide" style={{animationDelay: '300ms'}}>
+        <Box className="animate-slide" style={{ animationDelay: '300ms' }}>
           <AnimatedButton
             variant="contained"
             color="primary"
@@ -262,90 +297,90 @@ export default function Submissions({ isEmbedded = false }) {
           <>
             {tabValue === 0 && (
               <Box>
-                {filteredSubmissions.length > 0 ? filteredSubmissions.map((submission, index) => (
-                  <AnimatedBox 
-                    key={submission.id || submission._id}
-                    delay={400 + (index * 50)}
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      py: 2,
-                      borderBottom: '1px solid #eaeaea'
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box>
-              <Typography
-    variant="subtitle1"
-    fontWeight="medium"
-    component="div"
-    dangerouslySetInnerHTML={{
-      __html: DOMPurify.sanitize(submission.title || 'No title'),
-    }}
-  />
-  <Typography variant="body2" color="text.secondary">
-    {submission.abstract
-      ? submission.abstract.replace(/<[^>]+>/g, '').substring(0, 100) + '...'
-      : 'No abstract available'}
-  </Typography>
-</Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <StatusChip 
-                          label={submission.status || "Submitted"} 
-                          status={submission.status || "Submitted"}
-                          size="small"
-                        />
-                        <Button 
-                          variant="outlined"
-                          onClick={() => handleViewSubmission(submission.id || submission._id)}
-                          sx={{ ml: 2, textTransform: 'none' }}
-                          className="animate-slide"
-                          style={{animationDelay: `${450 + (index * 50)}ms`}}
-                        >
-                          View
-                        </Button>
-                        <IconButton 
-                          size="small" 
-                          sx={{ ml: 1 }}
-                          onClick={() => toggleExpand(submission.id || submission._id)}
-                        >
-                          {expanded[submission.id || submission._id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                        </IconButton>
-                      </Box>
-                    </Box>
-                    
-                    {expanded[submission.id || submission._id] && (
-                      <>
-                       <Typography
-                        variant="h6"
-                        component="div"
-                        dangerouslySetInnerHTML={{ __html: submission.title }}
-                      />
-
-                      <Box sx={{ mt: 2 }} className="animate-slide" style={{ animationDelay: `${500 + (index * 50)}ms` }}>
-                        <Typography variant="body2">
-                          <strong>Keywords:</strong> {submission.keywords ? submission.keywords.join(', ') : 'No keywords available'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                          Last activity recorded on {submission.updatedAt ? new Date(submission.updatedAt).toLocaleDateString() : new Date().toLocaleDateString()}.
-                        </Typography>
+                {filteredSubmissions.length > 0 ? (
+                  filteredSubmissions.map((submission, index) => (
+                    <AnimatedBox
+                      key={submission.id}
+                      delay={400 + index * 50}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        py: 2,
+                        borderBottom: '1px solid #eaeaea',
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box>
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight="medium"
+                            component="div"
+                            dangerouslySetInnerHTML={safeHTML(submission.title)}
+                          />
+                          <Typography variant="body2" color="text.secondary">
+                            {submission.abstract
+                              ? submission.abstract.replace(/<[^>]+>/g, '').substring(0, 100) + '...'
+                              : 'No abstract available'}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <StatusChip label={submission.status} status={submission.status} size="small" />
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleViewSubmission(submission.id)}
+                            sx={{ ml: 2, textTransform: 'none' }}
+                            className="animate-slide"
+                            style={{ animationDelay: `${450 + index * 50}ms` }}
+                          >
+                            View
+                          </Button>
+                          <IconButton size="small" sx={{ ml: 1 }} onClick={() => toggleExpand(submission.id)}>
+                            {expanded[submission.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                          </IconButton>
+                        </Box>
                       </Box>
 
-                      <Box sx={{ display: 'flex', justifyContent: 'end', mt: 2 }} className="animate-slide" style={{ animationDelay: `${550 + (index * 50)}ms` }}>
-                        <Button 
-                          color="secondary" 
-                          variant="outlined"
-                          onClick={() => handleDelete(submission.id || submission._id)}
-                          sx={{ textTransform: 'none' }}
-                        >
-                          Delete
-                        </Button>
-                      </Box>
+                      {expanded[submission.id] && (
+                        <>
+                          <Typography
+                            variant="h6"
+                            component="div"
+                            sx={{ mt: 1 }}
+                            dangerouslySetInnerHTML={safeHTML(submission.title)}
+                          />
 
-                      </>
-                    )}
-                  </AnimatedBox>
-                )) : (
+                          <Box sx={{ mt: 2 }} className="animate-slide" style={{ animationDelay: `${500 + index * 50}ms` }}>
+                            <Typography variant="body2">
+                              <strong>Keywords:</strong>{' '}
+                              {submission.keywords && submission.keywords.length > 0
+                                ? submission.keywords.join(', ')
+                                : 'No keywords available'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                              Last activity recorded on{' '}
+                              {formatDate(submission.updatedAt) || formatDate(submission.createdAt) || formatDate(new Date())}.
+                            </Typography>
+                          </Box>
+
+                          <Box
+                            sx={{ display: 'flex', justifyContent: 'end', mt: 2 }}
+                            className="animate-slide"
+                            style={{ animationDelay: `${550 + index * 50}ms` }}
+                          >
+                            <Button
+                              color="secondary"
+                              variant="outlined"
+                              onClick={() => handleDelete(submission.id)}
+                              sx={{ textTransform: 'none' }}
+                            >
+                              Delete
+                            </Button>
+                          </Box>
+                        </>
+                      )}
+                    </AnimatedBox>
+                  ))
+                ) : (
                   <AnimatedBox sx={{ py: 4, textAlign: 'center' }} delay={400}>
                     <Typography variant="body1" color="text.secondary">
                       No submissions found in your queue.
@@ -367,4 +402,4 @@ export default function Submissions({ isEmbedded = false }) {
       </PaperComponent>
     </ContentWrapper>
   );
-} 
+}

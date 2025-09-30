@@ -5,12 +5,20 @@ import AdminLayout from './adminLayout';
 
 const AdminUserList = () => {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    filterAndSortUsers();
+  }, [users, searchTerm, sortField, sortDirection]);
 
   const fetchUsers = () => {
     setLoading(true);
@@ -25,6 +33,42 @@ const AdminUserList = () => {
       });
   };
 
+  const filterAndSortUsers = () => {
+    let filtered = users.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.affiliation?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.country?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    filtered.sort((a, b) => {
+      let aValue = a[sortField] || '';
+      let bValue = b[sortField] || '';
+      
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+      
+      if (sortDirection === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    setFilteredUsers(filtered);
+  };
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="user-list-container">
@@ -32,138 +76,285 @@ const AdminUserList = () => {
           {`
             .user-list-container {
               background: #fff;
-              border-radius: 12px;
+              border-radius: 20px;
               box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-              padding: 28px;
-              margin: 20px;
-              transition: all 0.3s ease;
+              padding: 0;
+              margin: 0;
+              border: 1px solid rgba(255, 255, 255, 0.2);
             }
             
             .user-list-header {
-              margin-bottom: 28px;
-              border-bottom: 1px solid #f0f0f0;
-              padding-bottom: 16px;
+              padding: 32px 32px 24px;
+              border-bottom: 1px solid #e2e8f0;
+              background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+              border-radius: 20px 20px 0 0;
+            }
+            
+            .header-content {
               display: flex;
               justify-content: space-between;
-              align-items: center;
+              align-items: flex-start;
+              margin-bottom: 24px;
             }
             
             .header-left h2 {
-              color: #1a3251;
-              font-size: 1.8rem;
-              font-weight: 600;
+              color: #1e293b;
+              font-size: 2rem;
+              font-weight: 700;
               margin-bottom: 8px;
+              letter-spacing: -0.5px;
             }
             
             .header-left p {
-              color: #6b7280;
+              color: #64748b;
               font-size: 1rem;
+              font-weight: 500;
+            }
+            
+            .header-actions {
+              display: flex;
+              gap: 12px;
+              align-items: center;
             }
             
             .refresh-button {
-              background: #f9fafb;
-              border: 1px solid #e5e7eb;
-              color: #4b5563;
-              padding: 8px 16px;
-              border-radius: 6px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border: none;
+              color: white;
+              padding: 12px 20px;
+              border-radius: 12px;
               display: flex;
               align-items: center;
               gap: 8px;
               cursor: pointer;
-              transition: all 0.2s;
+              transition: all 0.3s;
+              font-weight: 600;
+              font-size: 0.9rem;
             }
             
             .refresh-button:hover {
-              background: #f3f4f6;
-              border-color: #d1d5db;
+              transform: translateY(-2px);
+              box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            }
+            
+            .search-container {
+              position: relative;
+              width: 100%;
+              max-width: 400px;
+            }
+            
+            .search-input {
+              width: 100%;
+              padding: 12px 16px 12px 48px;
+              border: 2px solid #e2e8f0;
+              border-radius: 12px;
+              font-size: 0.95rem;
+              transition: all 0.2s;
+              background: #f8fafc;
+              box-sizing: border-box;
+            }
+            
+            .search-input:focus {
+              outline: none;
+              border-color: #667eea;
+              background: #fff;
+              box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+            
+            .search-icon {
+              position: absolute;
+              left: 16px;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #64748b;
+            }
+            
+            .stats-row {
+              display: flex;
+              gap: 24px;
+              margin-top: 16px;
+            }
+            
+            .stat-item {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 8px 16px;
+              background: rgba(102, 126, 234, 0.1);
+              border-radius: 8px;
+              font-size: 0.9rem;
+              font-weight: 600;
+              color: #667eea;
+            }
+            
+            .table-container {
+              padding: 32px;
+              background: #fff;
             }
             
             .users-table {
               width: 100%;
               border-collapse: separate;
               border-spacing: 0;
-              margin-top: 10px;
             }
             
             .users-table th {
               text-align: left;
-              padding: 16px;
-              background: #f9fafb;
-              color: #4b5563;
-              font-weight: 600;
-              font-size: 0.9rem;
+              padding: 16px 20px;
+              background: #f8fafc;
+              color: #475569;
+              font-weight: 700;
+              font-size: 0.85rem;
               text-transform: uppercase;
-              letter-spacing: 0.5px;
-              border-bottom: 2px solid #e5e7eb;
+              letter-spacing: 1px;
+              border-bottom: 2px solid #e2e8f0;
+              cursor: pointer;
+              transition: all 0.2s;
+              position: relative;
+            }
+            
+            .users-table th:hover {
+              background: #f1f5f9;
+              color: #334155;
+            }
+            
+            .sort-indicator {
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+            }
+            
+            .sort-arrow {
+              width: 16px;
+              height: 16px;
+              opacity: 0.5;
+              transition: all 0.2s;
+            }
+            
+            .sort-arrow.active {
+              opacity: 1;
+              color: #667eea;
             }
             
             .users-table td {
-              padding: 16px;
-              border-bottom: 1px solid #f0f0f0;
-              color: #1f2937;
+              padding: 20px;
+              border-bottom: 1px solid #f1f5f9;
+              color: #334155;
               font-size: 0.95rem;
+              vertical-align: middle;
             }
             
             .users-table tr:last-child td {
               border-bottom: none;
             }
             
-            .users-table tr {
+            .users-table tbody tr {
               cursor: pointer;
-              transition: all 0.2s;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
-            .users-table tr:hover {
-              background: rgba(249, 250, 251, 0.5);
-              transform: translateY(-1px);
-              box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            .users-table tbody tr:hover {
+              background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             }
             
             .user-name {
-              font-weight: 500;
-              color: #1a3251;
+              font-weight: 600;
+              color: #1e293b;
               display: flex;
               align-items: center;
-              gap: 10px;
+              gap: 12px;
             }
             
             .user-avatar {
-              width: 32px;
-              height: 32px;
-              border-radius: 50%;
-              background: #e5e7eb;
+              width: 40px;
+              height: 40px;
+              border-radius: 12px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
               display: flex;
               align-items: center;
               justify-content: center;
-              color: #6b7280;
+              color: white;
+              font-weight: 700;
+              font-size: 1rem;
+              flex-shrink: 0;
+            }
+            
+            .user-info {
+              display: flex;
+              flex-direction: column;
+              gap: 2px;
+            }
+            
+            .user-name-text {
+              font-size: 0.95rem;
               font-weight: 600;
-              font-size: 0.9rem;
+              color: #1e293b;
             }
             
             .user-email {
-              color: #4b5563;
+              font-size: 0.85rem;
+              color: #64748b;
             }
             
             .user-affiliation {
-              color: #6b7280;
+              color: #475569;
               font-size: 0.9rem;
+              font-weight: 500;
             }
             
             .user-country {
               display: flex;
               align-items: center;
-              gap: 6px;
+              gap: 8px;
+              font-weight: 500;
+              color: #475569;
+            }
+            
+            .country-flag {
+              width: 20px;
+              height: 20px;
+              border-radius: 4px;
+              background: #f1f5f9;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 0.8rem;
             }
             
             .user-date {
-              color: #6b7280;
+              color: #64748b;
               font-size: 0.9rem;
+              font-weight: 500;
             }
             
             .table-index {
-              color: #9ca3af;
+              color: #94a3b8;
               font-size: 0.9rem;
-              width: 40px;
+              font-weight: 600;
+              width: 50px;
+            }
+            
+            .status-badge {
+              display: inline-flex;
+              align-items: center;
+              padding: 4px 12px;
+              border-radius: 20px;
+              font-size: 0.8rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .status-active {
+              background: #dcfce7;
+              color: #166534;
+            }
+            
+            .status-inactive {
+              background: #fef2f2;
+              color: #991b1b;
             }
             
             .loading {
@@ -228,17 +419,52 @@ const AdminUserList = () => {
         </style>
         
         <div className="user-list-header">
-          <div className="header-left">
-            <h2>Registered Users</h2>
-            <p>Manage and view all users registered on the platform</p>
+          <div className="header-content">
+            <div className="header-left">
+              <h2>User Management</h2>
+              <p>Manage and view all users registered on the platform</p>
+            </div>
+            <div className="header-actions">
+              <button className="refresh-button" onClick={fetchUsers} disabled={loading}>
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </div>
           </div>
-          <button className="refresh-button" onClick={fetchUsers}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-              <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-            </svg>
-            Refresh
-          </button>
+          
+          <div className="search-container">
+            <div className="search-icon">
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search users by name, email, affiliation, or country..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          
+          <div className="stats-row">
+            <div className="stat-item">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+              </svg>
+              Total: {users.length}
+            </div>
+            <div className="stat-item">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Filtered: {filteredUsers.length}
+            </div>
+          </div>
         </div>
         
         {loading ? (
@@ -246,49 +472,102 @@ const AdminUserList = () => {
             <div className="loading-spinner"></div>
             <div>Loading users...</div>
           </div>
-        ) : users.length > 0 ? (
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th className="table-index">#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Affiliation</th>
-                <th>Country</th>
-                <th>Joined</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr key={user.id}>
-                  <td className="table-index">{index + 1}</td>
-                  <td>
-                    <div className="user-name">
-                      <div className="user-avatar">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      {user.name}
+        ) : filteredUsers.length > 0 ? (
+          <div className="table-container">
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th className="table-index">#</th>
+                  <th onClick={() => handleSort('name')}>
+                    <div className="sort-indicator">
+                      User
+                      <svg className={`sort-arrow ${sortField === 'name' ? 'active' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sortDirection === 'asc' ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+                      </svg>
                     </div>
-                  </td>
-                  <td className="user-email">{user.email}</td>
-                  <td className="user-affiliation">{user.affiliation}</td>
-                  <td className="user-country">
-                    {user.country}
-                  </td>
-                  <td className="user-date">{new Date(user.created_at).toLocaleDateString()}</td>
+                  </th>
+                  <th onClick={() => handleSort('affiliation')}>
+                    <div className="sort-indicator">
+                      Affiliation
+                      <svg className={`sort-arrow ${sortField === 'affiliation' ? 'active' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sortDirection === 'asc' ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+                      </svg>
+                    </div>
+                  </th>
+                  <th onClick={() => handleSort('country')}>
+                    <div className="sort-indicator">
+                      Country
+                      <svg className={`sort-arrow ${sortField === 'country' ? 'active' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sortDirection === 'asc' ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+                      </svg>
+                    </div>
+                  </th>
+                  <th onClick={() => handleSort('created_at')}>
+                    <div className="sort-indicator">
+                      Joined
+                      <svg className={`sort-arrow ${sortField === 'created_at' ? 'active' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sortDirection === 'asc' ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} />
+                      </svg>
+                    </div>
+                  </th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user, index) => (
+                  <tr key={user.id}>
+                    <td className="table-index">{index + 1}</td>
+                    <td>
+                      <div className="user-name">
+                        <div className="user-avatar">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="user-info">
+                          <div className="user-name-text">{user.name}</div>
+                          <div className="user-email">{user.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="user-affiliation">{user.affiliation || 'Not specified'}</td>
+                    <td>
+                      <div className="user-country">
+                        <div className="country-flag">
+                          {user.country ? user.country.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        {user.country || 'Unknown'}
+                      </div>
+                    </td>
+                    <td className="user-date">
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      }) : 'Unknown'}
+                    </td>
+                    <td>
+                      <span className="status-badge status-active">Active</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div className="empty-state">
             <div className="empty-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
               </svg>
             </div>
-            <div className="empty-text">No users found</div>
-            <div className="empty-subtext">When users register on the platform, they will appear here.</div>
+            <div className="empty-title">{searchTerm ? 'No matching users found' : 'No users found'}</div>
+            <div className="empty-description">
+              {searchTerm 
+                ? `No users match your search for "${searchTerm}". Try adjusting your search terms.`
+                : 'When users register on the platform, they will appear here for easy management.'
+              }
+            </div>
           </div>
         )}
       </div>

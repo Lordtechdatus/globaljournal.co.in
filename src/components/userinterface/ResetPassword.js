@@ -4,12 +4,22 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_BASE =
+  (process.env.REACT_APP_API_BASE && process.env.REACT_APP_API_BASE.replace(/\/+$/, '')) ||
+  'https://backend.globaljournal.co.in';
+
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resultMessage, setResultMessage] = useState('');
+  const [resultType, setResultType] = useState(''); // 'success' | 'error'
   const navigate = useNavigate();
 
   const handleResetPassword = async (event) => {
     event.preventDefault();
+    setResultMessage('');
+    setResultType('');
+    setLoading(true);
   
     let attempts = 0;
     const maxAttempts = 3;
@@ -17,30 +27,41 @@ export default function ResetPassword() {
   
     while (attempts < maxAttempts && !success) {
       try {
+        const url = `${API_BASE}/reset.php?action=request`;
+       // console.log('POST', url);
         const response = await axios.post(
-          `${process.env.REACT_APP_API_BASE_URL}reset.php?action=request`,
-          { email }
+          url,
+          { email },
+          { headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' } }
         );
+        //console.log('Response', response.data);
   
         if (response.data.success) {
-          alert('A password reset link has been sent to your email if it exists in our system.');
+          alert('A password reset link has been sent to your email.');
+          setResultMessage(response.data.message || 'Reset email sent successfully.');
+          setResultType('success');
           navigate('/login');
           success = true;
         } else {
-          console.log('Attempt', attempts + 1, ':', response.data.message || 'Unknown error');
+        //  console.log('Attempt', attempts + 1, ':', response.data.message || 'Unknown error');
+          setResultMessage(response.data.message || 'Failed to send reset email.');
+          setResultType('error');
           attempts++;
           if (attempts >= maxAttempts) {
             alert('Something went wrong. Please try again later.');
           }
         }
       } catch (error) {
-        console.error('Attempt', attempts + 1, 'error:', error);
+       // console.error('Attempt', attempts + 1, 'error:', error);
+        setResultMessage('Network or server error while sending reset email.');
+        setResultType('error');
         attempts++;
         if (attempts >= maxAttempts) {
           alert('Something went wrong. Please try again later.');
         }
       }
     }
+    setLoading(false);
   };  
 
   return (
@@ -96,9 +117,19 @@ export default function ResetPassword() {
               py: 1.5,
               fontWeight: 500,
             }}
+            disabled={loading || !email}
           >
-            Send Reset Link
+            {loading ? 'Sending…' : 'Send Reset Link'}
           </Button>
+          {resultMessage && (
+            <Typography
+              variant="body2"
+              sx={{ mb: 2, textAlign: 'center' }}
+              color={resultType === 'success' ? 'success.main' : 'error.main'}
+            >
+              {resultMessage}
+            </Typography>
+          )}
           <Button
             fullWidth
             variant="text"

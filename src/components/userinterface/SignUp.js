@@ -177,8 +177,15 @@ export default function SignUpPage() {
   // Handle Form Submission
   const handleSubmit = (event) => {
     event.preventDefault();
+    
+    //console.log('Form submitted!');
+    //console.log('Form data:', formData);
+    
+    const isValid = validateForm();
+    //console.log('Form validation result:', isValid);
+    //console.log('Current errors:', errors);
   
-    if (validateForm()) {
+    if (isValid) {
       // Prepare data to send in the format expected by the backend
       const dataToSend = {
         username: formData.username,
@@ -192,49 +199,70 @@ export default function SignUpPage() {
         areasOfInterest: formData.areasOfInterest || undefined, // Send undefined if empty
         agreeToPrivacy: formData.agreeToPrivacy
       };
+      
+      //console.log('Data to send:', dataToSend);
+      //console.log('JSON stringified:', JSON.stringify(dataToSend));
   
-      // Retry function
-      const attemptRequest = async (retryCount) => {
-        try {
-          const response = await fetch('https://backend.globaljournal.co.in/register.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(dataToSend),
-            mode: 'cors'
-          });
-  
-          if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.message || `Server error: ${response.status}`);
-          }
-  
-          const data = await response.json();
-          // If successful registration
-          alert('Account created successfully!');
-          if (data.token) {
-            localStorage.setItem('userToken', data.token);
-            window.dispatchEvent(new Event('login'));
-          }
-          navigate('/login');
-        } catch (error) {
-          // If retryCount is less than 2, try again
-          if (retryCount < 2) {
-            alert(`Attempt ${retryCount + 1} failed. Retrying...`);
-            attemptRequest(retryCount + 1); // Retry the request
-          } else {
-            // After 3 failed attempts (0, 1, 2 retries)
-            alert(error.message || 'Registration failed. Please try again.');
-          }
-        }
-      };
-  
-      // Start the first attempt (retryCount 0)
-      attemptRequest(0);
+    // Helper: fetch with timeout
+const fetchWithTimeout = async (url, options = {}, timeoutMs = 15000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(id);
+  }     
+};
+
+// Retry function
+const attemptRequest = async (retryCount) => {  
+  try {
+    const response = await fetchWithTimeout('https://backend.globaljournal.co.in/register.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(dataToSend),
+      mode: 'cors',
+      // credentials: 'include', // only if your backend sets cookies
+    }, 15000);
+
+    // Parse body ONCE (try JSON, fallback to text for debugging)
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    const payload = isJson ? await response.json().catch(() => ({})) : await response.text();
+
+    if (!response.ok) {
+      // Bubble up server message if provided
+      const serverMsg = isJson && payload && payload.message ? payload.message : String(payload || '');
+      throw new Error(serverMsg || `Server error: ${response.status}`);
     }
-  };  
+
+    // Success
+    const data = isJson ? payload : {};
+    alert('Account created successfully!');
+    if (data.token) {
+      localStorage.setItem('userToken', data.token);
+      window.dispatchEvent(new Event('login'));
+    }
+    navigate('/login');
+
+  } catch (err) {
+    // Network errors / aborted / server message
+    const msg = err?.message || 'Network error';
+    alert(msg || 'Registration failed. Please try again.');
+  }  
+};
+attemptRequest(0);
+} else {
+  //console.log('Form validation failed, not submitting');
+  //console.log('Validation errors:', errors);
+  alert('Please fix the form errors before submitting.');
+}
+}
+
 
   return (
     <Box

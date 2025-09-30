@@ -402,59 +402,58 @@ export default function MyProfile() {
     const attemptFetchProfile = async (retryCount = 0) => {
       try {
         setLoading(true);
-        const response = await ApiService.getUserProfile();
-        
-        if (response.data) {
-          // Transform the data to match the expected format
-          const transformedData = {
-            givenName: response.data.firstName || response.data.givenName || response.data.name?.split(' ')[0] || '',
-            familyName: response.data.lastName || response.data.familyName || response.data.name?.split(' ').slice(1).join(' ') || '',
-            email: response.data.email || '',
-            username: response.data.username || '',
-            affiliation: response.data.affiliation || '',
-            country: response.data.country || '',
-            phonenumber: response.data.phonenumber || '',
-            orcidId: response.data.orcidId || '',
-            areasOfInterest: Array.isArray(response.data.researchInterests)
-              ? response.data.researchInterests
-              : Array.isArray(response.data.areasOfInterest)
-              ? response.data.areasOfInterest
-              : typeof response.data.areas_of_interest === 'string'
-              ? response.data.areas_of_interest.split(',').map(item => item.trim()).filter(Boolean)
-              : [],
-            joinedDate: response.data.createdAt || ''
-          };
-          console.log('Transformed profile data:', transformedData);
-          setProfileData(transformedData);
-        } else {
-          setError('No profile data returned from server');
-        }
-        setLoading(false);
-      } catch (err) {
-        // If retryCount is less than 2, try again
-        if (retryCount < 2) {
-          attemptFetchProfile(retryCount + 1); // Retry the request
-        } else {
-          if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-            localStorage.removeItem('userToken'); // Clear invalid token
-            setError('Authentication failed. Please login again.');
-            setTimeout(() => {
-              navigate('/login');
-            }, 2000); // Redirect after showing message briefly
-          } else if (err.code === 'ERR_NETWORK') {
-            setError('Unable to connect to the server. Please check if the backend is running.');
-          } else if (err.message) {
-            setError(err.message);
-          } else if (err.response) {
-            setError(err.response.data?.message || 'Failed to load profile data');
-          } else {
-            setError('Failed to load profile data after multiple attempts. Please try again later.');
-          }
-          setLoading(false);
+        const server = await ApiService.getUserProfile(); // returns the user object
+
+if (server) {
+  const transformedData = {
+    givenName: server.firstName || server.givenName || server.name?.split(' ')[0] || '',
+    familyName: server.lastName || server.familyName || server.name?.split(' ').slice(1).join(' ') || '',
+    email: server.email || '',
+    username: server.username || '',
+    affiliation: server.affiliation || '',
+    country: server.country || '',
+    phonenumber: server.phonenumber || server.phone || '',
+    orcidId: server.orcidId || server.orcid_id || '',
+    areasOfInterest: Array.isArray(server.researchInterests)
+      ? server.researchInterests
+      : Array.isArray(server.areasOfInterest)
+      ? server.areasOfInterest
+      : typeof server.areas_of_interest === 'string'
+      ? server.areas_of_interest.split(',').map(s => s.trim()).filter(Boolean)
+      : [],
+    joinedDate: server.createdAt || server.created_at || ''
+  };
+ // console.log('Transformed profile data:', transformedData);
+  setProfileData(transformedData);
+  setLoading(false);
+} else {
+  setError('No profile data returned from server');
+  setLoading(false);
+}
+
+} catch (err) {
+  if (retryCount < 2) {
+    attemptFetchProfile(retryCount + 1);
+    return;
+  }
+  if (err.response?.status === 401 || err.response?.status === 403 || err.message?.includes('login again')) {
+    localStorage.removeItem('userToken');
+    setError('Authentication failed. Please login again.');
+    setTimeout(() => navigate('/login'), 1500);
+  } else if (err.response?.status === 422) {
+    setError('Profile request missing id/email. Please login again.');
+    localStorage.removeItem('userToken');
+    setTimeout(() => navigate('/login'), 1500);
+  } else if (err.code === 'ERR_NETWORK') {
+    setError('Unable to connect to the server. Please check if the backend is running.');
+  } else {
+    setError(err.response?.data?.message || err.message || 'Failed to load profile data');
+  }
+  setLoading(false);  
           setTimeout(() => {
             navigate('/login'); // Redirect to login page after showing the message
           }, 3000); // Redirect after 3 seconds
-        }
+          
       }
     };
   

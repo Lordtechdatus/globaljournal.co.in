@@ -24,14 +24,15 @@ const AdminProfile = () => {
   }, []);
 
   const fetchAdminData = () => {
-    // const adminEmail = 'admin@globaljournal.com';
+    // const adminEmail = 'admin@globaljournal.co.in';
     // const adminPassword = 'prateek@2641';
   
     setLoading(true);
   
-    axios.post('https://backend.globaljournal.co.in/get-admin-profile.php', {
-      withCredentials: true 
-    })
+    axios.post('https://backend.globaljournal.co.in/get-admin-profile.php', 
+    {},
+      { withCredentials: true } 
+    )
     .then(res => {
       if (res.data && res.data.success) {
         setAdmin(res.data.user);

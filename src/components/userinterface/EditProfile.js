@@ -48,21 +48,26 @@ export default function EditProfile() {
     const attemptFetchProfile = async (retryCount = 0) => {
       try {
         setLoading(true);
-        const response = await ApiService.getUserProfile();
-  
-        if (response.data) {
+        const server = await ApiService.getUserProfile();
+
+        if (server) {
+          const givenName = server.firstName || server.givenName || server.name?.split(' ')[0] || '';
+          const familyName = server.lastName || server.familyName || server.name?.split(' ').slice(1).join(' ') || '';
+          const email = server.email || '';
+
           setFormData({
-            givenName: response.data.firstName || response.data.givenName || response.data.name?.split(' ')[0] || '',
-            familyName: response.data.lastName || response.data.familyName || response.data.name?.split(' ').slice(1).join(' ') || '',
-            email: response.data.email || '',
+            givenName,
+            familyName,
+            email,
             currentPassword: '',
             newPassword: '',
             confirmPassword: ''
           });
+          setLoading(false);
         } else {
           setError('No profile data returned from server');
+          setLoading(false);
         }
-        setLoading(false);
       } catch (err) {
         // If retryCount is less than 2, try again
         if (retryCount < 2) {
