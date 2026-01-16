@@ -117,7 +117,7 @@ const AuthorGuidelines = () => {
               For any queries, assistance, or technical support during the submission process, please contact the editorial office:<br />
               Mr. Prateek Bajpayee<br />
               Editorial Coordinator<br />
-             <b>Email:</b> prateekbajpai319@gmail.com
+             <b>Email:</b> prateekvajpai1854@gmail.com
             </AnimatedParagraph>
 
             <AnimatedH2 delay={850}>📢 Publishing Ethics</AnimatedH2>
