@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from './adminLayout';
+import { apiUrl } from '../../config/api';
 
 const NewSubmissions = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -14,9 +15,9 @@ const NewSubmissions = () => {
   const fetchSubmissions = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://backend.globaljournal.co.in/get-newsubmission-admin.php");
+      const response = await fetch(apiUrl('/get-newsubmission-admin.php'));
       const data = await response.json();
-  
+          
       if (!Array.isArray(data)) {
         throw new Error("Unexpected response");
       }

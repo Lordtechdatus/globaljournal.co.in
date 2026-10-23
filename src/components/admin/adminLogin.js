@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo copy.png'; 
 import axios from 'axios';
+import { apiUrl } from '../../config/api';
 
-const API = 'https://backend.globaljournal.co.in/admin-login.php';
+const API = apiUrl('/admin-login.php');
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');

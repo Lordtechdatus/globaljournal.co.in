@@ -12,6 +12,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import PublicIcon from '@mui/icons-material/Public';
 import LockIcon from '@mui/icons-material/Lock';
 import { useNavigate } from 'react-router-dom';
+import { apiUrl } from '../../config/api';
 import PhoneIcon from '@mui/icons-material/Phone';
 import logoImage from '../../assets/logo.png';
 import backgroundImage from '../../assets/background.png';
@@ -217,8 +218,8 @@ const fetchWithTimeout = async (url, options = {}, timeoutMs = 15000) => {
 
 // Retry function
 const attemptRequest = async (retryCount) => {  
-  try {
-    const response = await fetchWithTimeout('https://backend.globaljournal.co.in/register.php', {
+  try { 
+    const response = await fetchWithTimeout(apiUrl('/register.php'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

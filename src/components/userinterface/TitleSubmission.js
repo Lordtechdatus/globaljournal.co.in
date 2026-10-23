@@ -78,7 +78,7 @@ export default function TitleSubmission() {
       //   }
       // }
       
-      // const response = await axios.post('https://backend.globaljournal.co.in/title_submission.php', {
+      // const response = await axios.post(apiUrl('/title_submission.php'), {
       //   title,
       //   submitted_by
       // });

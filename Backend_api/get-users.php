@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 // Adjust to your frontend origin(s). For dev, you can temporarily use "*".
-header('Access-Control-Allow-Origin: https://globaljournal.co.in');
+header('Access-Control-Allow-Origin: https://globaljournal.co');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 

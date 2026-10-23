@@ -10,8 +10,8 @@
 $allowed_origins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  'https://globaljournal.co.in',
-  'https://www.globaljournal.co.in',
+  'https://globaljournal.co',
+  'https://www.globaljournal.co',
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && in_array($origin, $allowed_origins, true)) {
@@ -30,17 +30,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
 }
 
 /* ---- Config ---- */
-const FRONTEND_RESET_URL = 'https://globaljournal.co.in/set-password';
+const FRONTEND_RESET_URL = 'https://globaljournal.co/set-password';
 
 // SMTP (cPanel)
 $MAIL = [
   'method'     => 'smtp',
-  'host'       => 'mail.globaljournal.co.in',
+  'host'       => 'mail.globaljournal.co',
   'port'       => 465,
   'secure'     => 'ssl',
-  'username'   => 'no-reply@globaljournal.co.in',
+  'username'   => 'no-reply@globaljournal.co',
   'password'   => 'Kamalsharma@264', // TODO: put real mailbox password
-  'from_email' => 'no-reply@globaljournal.co.in',
+  'from_email' => 'no-reply@globaljournal.co',
   'from_name'  => 'Global Journal',
 ];
 

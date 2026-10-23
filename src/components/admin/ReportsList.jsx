@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from './adminLayout';
 import axios from 'axios';
+import { apiUrl } from '../../config/api';
 
 const ReportsList = () => {
   const [reports, setReports] = useState([]);
@@ -16,7 +17,7 @@ const ReportsList = () => {
  
   useEffect(() => {
    
-    axios.get("https://backend.globaljournal.co.in/get-reports.php")
+    axios.get(apiUrl('/get-reports.php'))
       .then(response => {   
         const processedReports = response.data.map(report => ({
           ...report,
@@ -53,7 +54,7 @@ const ReportsList = () => {
     }));
     
     axios({
-      url: `https://backend.globaljournal.co.in/download-report.php?id=${report.id}`,
+      url: apiUrl(`/download-report.php?id=${report.id}`),
       method: 'GET',
       responseType: 'blob',
     })
@@ -68,7 +69,7 @@ const ReportsList = () => {
         link.click();
         document.body.removeChild(link);
         
-        axios.post("https://backend.globaljournal.co.in/download-report.php", { reportId: report.id })
+        axios.post(apiUrl('/download-report.php'), { reportId: report.id })
           .then(() => {
             const updatedReports = reports.map(r => {
               if (r.id === report.id) {

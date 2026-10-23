@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import AdminLayout from "./adminLayout";
+import { apiUrl } from '../../config/api';
 
 const dashboardStyles = `
 /* Dashboard Grid Layout */
@@ -306,7 +307,7 @@ const Dashboard = () => {
   });
   
   useEffect(() => {
-    axios.get("https://backend.globaljournal.co.in/dashboard-stats.php")
+    axios.get(apiUrl('/dashboard-stats.php'))
       .then(res => setStats(res.data))
       .catch(err => console.error("Failed to load stats", err));
   }, []);
@@ -315,7 +316,7 @@ const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
   useEffect(() => {
-    axios.get("https://backend.globaljournal.co.in/recent-activity.php")
+    axios.get(apiUrl('/recent-activity.php'))
       .then(res => setActivity(res.data))
       .catch(err => console.error("Failed to load recent activity", err));
   }, []);

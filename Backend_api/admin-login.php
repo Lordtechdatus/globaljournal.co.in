@@ -1,6 +1,6 @@
 <?php
 // ===== admin_login.php (for admins: id,name,email,password,created_at) =====
-$allowed = ['http://localhost:3000','http://127.0.0.1:3000','https://globaljournal.co.in','https://www.globaljournal.co.in'];
+$allowed = ['http://localhost:3000','http://127.0.0.1:3000','https://globaljournal.co','https://www.globaljournal.co'];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && in_array($origin,$allowed,true)) { header("Access-Control-Allow-Origin: $origin"); header('Access-Control-Allow-Credentials: true'); header('Vary: Origin'); }
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');

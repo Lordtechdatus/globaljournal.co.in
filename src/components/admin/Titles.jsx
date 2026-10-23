@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from './adminLayout';
+import { apiUrl } from '../../config/api';
 
 const Titles = () => {
   const [titles, setTitles] = useState([]);
@@ -18,7 +19,7 @@ const Titles = () => {
 
   const fetchTitles = () => {
     setLoading(true);
-    axios.get("https://backend.globaljournal.co.in/get-titlesadmin.php")
+    axios.get(apiUrl('/get-titlesadmin.php'))
       .then(res => {
         setTitles(res.data || []); 
         setLoading(false);

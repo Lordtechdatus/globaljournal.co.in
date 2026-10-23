@@ -3,10 +3,7 @@ import { Container, CssBaseline, Typography, TextField, Button, Box, Paper } fro
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
-const API_BASE =
-  (process.env.REACT_APP_API_BASE && process.env.REACT_APP_API_BASE.replace(/\/+$/, '')) ||
-  'https://backend.globaljournal.co.in';
+import { API_BASE_URL } from '../../config/api';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
@@ -27,7 +24,7 @@ export default function ResetPassword() {
   
     while (attempts < maxAttempts && !success) {
       try {
-        const url = `${API_BASE}/reset.php?action=request`;
+        const url = `${API_BASE_URL}/reset.php?action=request`;
        // console.log('POST', url);
         const response = await axios.post(
           url,

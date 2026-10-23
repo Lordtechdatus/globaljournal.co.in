@@ -16,7 +16,7 @@ const Sidebar = () => {
     backgroundColor: '#e6f7ff',
     borderLeft: '3px solid #1890ff'
   };
-  
+    
   return (
     <div style={{ width: '250px', background: '#f8f8f8', height: '100vh', padding: '20px 0', boxSizing: 'border-box', borderRight: '1px solid #ddd' }}>
       <div style={{ padding: '0 24px 20px', borderBottom: '1px solid #ddd', marginBottom: '10px' }}>

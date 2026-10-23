@@ -19,6 +19,8 @@
     "@tiptap/react": "^3.0.1",
     "@tiptap/starter-kit": "^3.0.1",
     "axios": "^1.8.4",
+    "baseline-browser-mapping": "^2.10.33",
+    "caniuse-lite": "^1.0.30001793",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
     "framer-motion": "^12.23.0",

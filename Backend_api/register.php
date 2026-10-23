@@ -1,8 +1,8 @@
 <?php
 // ---- CORS (top of file) ----
 $ALLOWED_ORIGINS = [
-  'https://globaljournal.co.in',
-  'https://www.globaljournal.co.in',
+  'https://globaljournal.co',
+  'https://www.globaljournal.co',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ];

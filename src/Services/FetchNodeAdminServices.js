@@ -1,10 +1,10 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://backend.globaljournal.co.in'; // fallback
 console.log('API_BASE_URL =', API_BASE_URL);
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,       // ✅ all relative paths will use the backend domain
+  baseURL: API_BASE_URL,       
   headers: { 'Content-Type': 'application/json' },
   timeout: 10000
 });

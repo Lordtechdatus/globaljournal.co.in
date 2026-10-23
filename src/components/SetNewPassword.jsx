@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, CssBaseline, Typography, TextField, Button, Box, Paper, Alert } from '@mui/material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-
-const API_BASE =
-  (process.env.REACT_APP_API_BASE && process.env.REACT_APP_API_BASE.replace(/\/+$/, '')) ||
-  'https://backend.globaljournal.co.in';
+import { API_BASE_URL } from '../config/api';
 
 export default function SetNewPassword() {
   const [searchParams] = useSearchParams();
@@ -28,7 +25,7 @@ export default function SetNewPassword() {
     (async () => {
       try {
         const res = await axios.get(
-          `${API_BASE}/reset.php?action=verify&token=${encodeURIComponent(t)}`,
+          `${API_BASE_URL}/reset.php?action=verify&token=${encodeURIComponent(t)}`,
           { headers: { Accept: 'application/json' } }
         );
         if (!res.data?.success) throw new Error('Invalid or expired link.');
@@ -63,7 +60,7 @@ export default function SetNewPassword() {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${API_BASE}/reset.php?action=reset`,
+        `${API_BASE_URL}/reset.php?action=reset`,
         { token, password: pass },
         { headers: { 'Content-Type': 'application/json', Accept: 'application/json' } }
       );

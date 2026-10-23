@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from './adminLayout';
+import { apiUrl } from '../../config/api';
 
 const AdminUserList = () => {
   const [users, setUsers] = useState([]);
@@ -22,11 +23,11 @@ const AdminUserList = () => {
 
   const fetchUsers = () => {
     setLoading(true);
-    axios.get("https://backend.globaljournal.co.in/get-users.php")
+    axios.get(apiUrl('/get-users.php'))
       .then(res => {
         setUsers(res.data);
         setLoading(false);
-      })
+      })  
       .catch(err => {
         console.error("Error loading users:", err);
         setLoading(false);

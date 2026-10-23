@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from './adminLayout';
+import { apiUrl } from '../../config/api';
 
 const SubmissionFiles = () => {
   const [files, setFiles] = useState([]);
@@ -20,7 +21,7 @@ const SubmissionFiles = () => {
     try {
       setLoading(true);
       // Replace with your actual API endpoint
-      const response = await fetch("https://backend.globaljournal.co.in/submission_files_api.php");
+      const response = await fetch(apiUrl('/submission_files_api.php'));
       const res = await response.json();
 
      if (!res.success || !Array.isArray(res.data)) {
@@ -38,7 +39,7 @@ setFiles(res.data);
   const handleDownload = async (fileId, fileName) => {
     try {
       // Replace with your actual download endpoint
-      window.open(`https://backend.globaljournal.co.in/upload/report.php?id=${fileId}`, '_blank');
+      window.open(apiUrl(`/upload/report.php?id=${fileId}`), '_blank');
     } catch (error) {
      
       alert("Failed to download file. Please try again.");
@@ -52,7 +53,7 @@ setFiles(res.data);
   const handleStatusChange = async (fileId, newStatus) => {
     try {
       // Replace with your actual status update endpoint
-      const response = await fetch("https://backend.globaljournal.co.in/update-file-status.php", {
+        const response = await fetch(apiUrl('/update-file-status.php'), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

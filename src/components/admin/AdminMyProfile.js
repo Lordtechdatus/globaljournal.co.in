@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AdminLayout from './adminLayout';
+import { apiUrl } from '../../config/api';
 
 const AdminProfile = () => {
   const [admin, setAdmin] = useState(null); 
@@ -29,7 +30,7 @@ const AdminProfile = () => {
   
     setLoading(true);
   
-    axios.post('https://backend.globaljournal.co.in/get-admin-profile.php', 
+    axios.post(apiUrl('/get-admin-profile.php'), 
     {},
       { withCredentials: true } 
     )

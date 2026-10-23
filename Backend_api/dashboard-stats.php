@@ -7,8 +7,8 @@
 $allowed_origins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  'https://globaljournal.co.in',
-  'https://www.globaljournal.co.in'
+  'https://globaljournal.co',
+  'https://www.globaljournal.co'
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin && in_array($origin, $allowed_origins, true)) {
